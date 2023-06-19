@@ -15,7 +15,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/blocklords/sds/common/data_type"
+	"github.com/Seascape-Foundation/sds-common-lib/data_type"
 	"github.com/ethereum/go-ethereum/common/math"
 )
 

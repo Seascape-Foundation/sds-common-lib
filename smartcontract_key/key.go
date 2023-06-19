@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/blocklords/sds/common/data_type/key_value"
+	"github.com/Seascape-Foundation/sds-common-lib/data_type/key_value"
 )
 
 // Key of smartcontract composed from network id + "." + address.

@@ -3,7 +3,7 @@ package smartcontract_key
 import (
 	"testing"
 
-	"github.com/blocklords/sds/common/data_type/key_value"
+	"github.com/Seascape-Foundation/sds-common-lib/data_type/key_value"
 	"github.com/stretchr/testify/suite"
 )
 

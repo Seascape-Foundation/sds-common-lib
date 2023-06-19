@@ -1,30 +1,32 @@
 package database
 
 import (
-	"github.com/blocklords/sds/common/data_type/key_value"
-	"github.com/blocklords/sds/service/remote"
+	"github.com/Seascape-Foundation/sds-common-lib/data_type/key_value"
 )
 
 // Struct interface adds the database CRUD to the data struct.
+//
+// The interface that it accepts is the *remote.ClientSocket from the
+// "github.com/Seascape-Foundation/sds-service-lib/remote" package.
 type Crud interface {
 	// Update the parameters by int flag. It calls UPDATE command
-	Update(*remote.ClientSocket, uint8) error
+	Update(interface{}, uint8) error
 	// Exist in the database or not. It calls EXIST command
-	Exist(*remote.ClientSocket) bool
+	Exist(interface{}) bool
 
 	// Insert into the database. It calls INSERT command
-	Insert(*remote.ClientSocket) error
+	Insert(interface{}) error
 	// Load the database from database. It calls SELECT_ROW command
-	Select(*remote.ClientSocket) error
+	Select(interface{}) error
 
 	// It calls SELECT_ALL without WHERE clause of query.
 	//
 	// Result is then put to the second argument
-	SelectAll(*remote.ClientSocket, interface{}) error
+	SelectAll(interface{}, interface{}) error
 
 	// AllByCondition returns structs from database to the second argument.
 	// The sql query should match to the condition.
 	//
 	// It calls SELECT_ALL with WHERE clause
-	SelectAllByCondition(*remote.ClientSocket, key_value.KeyValue, interface{}) error // uses SELECT_ROW
+	SelectAllByCondition(interface{}, key_value.KeyValue, interface{}) error // uses SELECT_ROW
 }

@@ -22,7 +22,7 @@ package topic
 import (
 	"fmt"
 
-	"github.com/blocklords/sds/common/data_type/key_value"
+	"github.com/Seascape-Foundation/sds-common-lib/data_type/key_value"
 )
 
 // Filter unlike Topic can omit the parameters
