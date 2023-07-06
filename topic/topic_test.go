@@ -20,11 +20,11 @@ import (
 // for each level
 type TestTopicSuite struct {
 	suite.Suite
-	topic        Topic
-	topic_string TopicString
+	topic       Topic
+	topicString String
 }
 
-// Setup
+// SetupTests
 // Setup checks the New() functions
 // Setup checks ToMap() functions
 func (suite *TestTopicSuite) SetupTest() {
@@ -36,46 +36,46 @@ func (suite *TestTopicSuite) SetupTest() {
 		Smartcontract: "TestErc20",
 		Event:         "Transfer",
 	}
-	topic_string := AsTopicString(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
+	topicString := AsTopicString(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
 
 	suite.topic = sample
-	suite.topic_string = topic_string
+	suite.topicString = topicString
 
-	suite.Require().Equal(topic_string, sample.ToString(FULL_LEVEL))
+	suite.Require().Equal(topicString, sample.String(FullLevel))
 }
 
 func (suite *TestTopicSuite) TestStringParse() {
-	new_topic, err := ParseString(suite.topic_string)
+	newTopic, err := ParseString(suite.topicString)
 	suite.Require().NoError(err)
-	suite.Require().EqualValues(suite.topic, new_topic)
+	suite.Require().EqualValues(suite.topic, newTopic)
 
 	// additional parameter in the topic string should fail
-	topic_string := AsTopicString(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer;m:transfer`)
-	_, err = ParseString(topic_string)
+	topicString := AsTopicString(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer;m:transfer`)
+	_, err = ParseString(topicString)
 	suite.Require().Error(err)
 
 	// case sensitive
-	topic_string = AsTopicString(`O:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
-	_, err = ParseString(topic_string)
+	topicString = AsTopicString(`O:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
+	_, err = ParseString(topicString)
 	suite.Require().Error(err)
 
 	// additional semicolon should fail
-	topic_string = AsTopicString(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer;`)
-	_, err = ParseString(topic_string)
+	topicString = AsTopicString(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer;`)
+	_, err = ParseString(topicString)
 	suite.Require().Error(err)
 
 	// missing the one of the paths
 	// if the event is given, then all previous levels
 	// should be given too.
 	// missing "network_id"
-	topic_string = AsTopicString(`o:seascape;p:sds-core;g:test-suite;s:TestErc20;e:Transfer`)
-	_, err = ParseString(topic_string)
+	topicString = AsTopicString(`o:seascape;p:sds-core;g:test-suite;s:TestErc20;e:Transfer`)
+	_, err = ParseString(topicString)
 	suite.Require().Error(err)
 
 	// value of the topic path is not a literal
 	// it has not required tokens.
-	topic_string = AsTopicString(`o:seascape:network;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
-	_, err = ParseString(topic_string)
+	topicString = AsTopicString(`o:seascape:network;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
+	_, err = ParseString(topicString)
 	suite.Require().Error(err)
 }
 
@@ -88,9 +88,9 @@ func (suite *TestTopicSuite) TestParsingJson() {
 		Set("s", "TestErc20").
 		Set("e", "Transfer")
 
-	new_topic, err := ParseJSON(kv)
+	newTopic, err := ParseJSON(kv)
 	suite.Require().NoError(err)
-	suite.Require().EqualValues(suite.topic, *new_topic)
+	suite.Require().EqualValues(suite.topic, *newTopic)
 
 	// changing the orders doesn't affect the topic
 	kv = key_value.Empty().
@@ -101,9 +101,9 @@ func (suite *TestTopicSuite) TestParsingJson() {
 		Set("s", "TestErc20").
 		Set("e", "Transfer")
 
-	new_topic, err = ParseJSON(kv)
+	newTopic, err = ParseJSON(kv)
 	suite.Require().NoError(err)
-	suite.Require().EqualValues(suite.topic, *new_topic)
+	suite.Require().EqualValues(suite.topic, *newTopic)
 
 	// additional parameter in the topic string
 	// should succeed, but the value will be missed
@@ -113,39 +113,39 @@ func (suite *TestTopicSuite) TestParsingJson() {
 
 	// setting with the empty parameter should fail
 	// empty group
-	invalid_kv := key_value.Empty().
+	invalidKv := key_value.Empty().
 		Set("o", "seascape").
 		Set("p", "sds").
 		Set("n", "1").
 		Set("g", "").
 		Set("s", "TestErc20").
 		Set("e", "Transfer")
-	_, err = ParseJSON(invalid_kv)
+	_, err = ParseJSON(invalidKv)
 	suite.Require().Error(err)
 
-	// case sensitive
+	// case-sensitive
 	// Group name is given as 'G', should be 'g'
-	invalid_kv = key_value.Empty().
+	invalidKv = key_value.Empty().
 		Set("o", "seascape").
 		Set("p", "sds").
 		Set("n", "1").
 		Set("G", "test-suite").
 		Set("s", "TestErc20").
 		Set("e", "Transfer")
-	_, err = ParseJSON(invalid_kv)
+	_, err = ParseJSON(invalidKv)
 	suite.Require().Error(err)
 
 	// missing the one of the paths
 	// if the event is given, then all previous levels
 	// should be given too.
 	// missing "group"
-	invalid_kv = key_value.Empty().
+	invalidKv = key_value.Empty().
 		Set("o", "seascape").
 		Set("p", "sds").
 		Set("n", "1").
 		Set("s", "TestErc20").
 		Set("e", "Transfer")
-	_, err = ParseJSON(invalid_kv)
+	_, err = ParseJSON(invalidKv)
 	suite.Require().Error(err)
 }
 
@@ -159,38 +159,38 @@ func (suite *TestTopicSuite) TestToString() {
 		Event:         "Transfer",
 	}
 
-	topic_string := topic.ToString(0)
-	suite.Require().Empty(topic_string)
+	topicString := topic.String(0)
+	suite.Require().Empty(topicString)
 
-	topic_string = topic.ToString(7)
-	suite.Require().Empty(topic_string)
+	topicString = topic.String(7)
+	suite.Require().Empty(topicString)
 
-	expected_topic_string := TopicString(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
-	topic_string = topic.ToString(6)
-	suite.Require().EqualValues(expected_topic_string, topic_string)
+	expectedTopicString := String(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
+	topicString = topic.String(6)
+	suite.Require().EqualValues(expectedTopicString, topicString)
 
-	expected_topic_string = TopicString(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20`)
-	topic_string = topic.ToString(5)
-	suite.Require().EqualValues(expected_topic_string, topic_string)
+	expectedTopicString = `o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20`
+	topicString = topic.String(5)
+	suite.Require().EqualValues(expectedTopicString, topicString)
 
-	expected_topic_string = TopicString(`o:seascape;p:sds-core;n:1;g:test-suite`)
-	topic_string = topic.ToString(4)
-	suite.Require().EqualValues(expected_topic_string, topic_string)
+	expectedTopicString = `o:seascape;p:sds-core;n:1;g:test-suite`
+	topicString = topic.String(4)
+	suite.Require().EqualValues(expectedTopicString, topicString)
 
-	expected_topic_string = TopicString(`o:seascape;p:sds-core;n:1`)
-	topic_string = topic.ToString(3)
-	suite.Require().EqualValues(expected_topic_string, topic_string)
+	expectedTopicString = `o:seascape;p:sds-core;n:1`
+	topicString = topic.String(3)
+	suite.Require().EqualValues(expectedTopicString, topicString)
 
-	expected_topic_string = TopicString(`o:seascape;p:sds-core`)
-	topic_string = topic.ToString(2)
-	suite.Require().EqualValues(expected_topic_string, topic_string)
+	expectedTopicString = `o:seascape;p:sds-core`
+	topicString = topic.String(2)
+	suite.Require().EqualValues(expectedTopicString, topicString)
 
-	expected_topic_string = TopicString(`o:seascape`)
-	topic_string = topic.ToString(1)
-	suite.Require().EqualValues(expected_topic_string, topic_string)
+	expectedTopicString = `o:seascape`
+	topicString = topic.String(1)
+	suite.Require().EqualValues(expectedTopicString, topicString)
 
-	expected_topic_string = TopicString(`o:seascape`)
-	suite.Require().EqualValues(expected_topic_string, topic_string)
+	expectedTopicString = `o:seascape`
+	suite.Require().EqualValues(expectedTopicString, topicString)
 
 	topic = Topic{
 		Organization:  "seascape",
@@ -200,13 +200,13 @@ func (suite *TestTopicSuite) TestToString() {
 		Smartcontract: "TestErc20",
 		Event:         "Transfer",
 	}
-	topic_string = topic.ToString(FULL_LEVEL)
-	suite.Require().Empty(topic_string)
+	topicString = topic.String(FullLevel)
+	suite.Require().Empty(topicString)
 
 	// NetworkId is empty, the upper root exists
 	// But all topic should be valid
-	topic_string = topic.ToString(PROJECT_LEVEL)
-	suite.Require().Empty(topic_string)
+	topicString = topic.String(ProjectLevel)
+	suite.Require().Empty(topicString)
 
 	topic = Topic{
 		Organization:  "seascape",
@@ -215,8 +215,8 @@ func (suite *TestTopicSuite) TestToString() {
 		Smartcontract: "TestErc20",
 		Event:         "Transfer",
 	}
-	topic_string = topic.ToString(FULL_LEVEL)
-	suite.Require().Empty(topic_string)
+	topicString = topic.String(FullLevel)
+	suite.Require().Empty(topicString)
 
 	topic = Topic{
 		Organization:  "seascape",
@@ -225,11 +225,11 @@ func (suite *TestTopicSuite) TestToString() {
 		Group:         "test-suite",
 		Smartcontract: "TestErc20",
 	}
-	// the topic is FULL_LEVEL
+	// the topic is FullLevel,
 	// but we try to get full path
 	// it should fail
-	topic_string = topic.ToString(FULL_LEVEL)
-	suite.Require().Empty(topic_string)
+	topicString = topic.String(FullLevel)
+	suite.Require().Empty(topicString)
 
 }
 

@@ -23,58 +23,59 @@ type TestBlockHeaderSuite struct {
 // Test the timeouts
 // Test close (attempt to request)
 
-// Todo test inprocess and external types of controllers
+// Todo test in-process and external types of controllers
 // Todo test the business of the controller
 // Make sure that Account is set to five
 // before each test
 func (suite *TestBlockHeaderSuite) SetupTest() {
-	uint_number := uint64(10)
-	uint_timestamp := uint64(123)
-	uint_map := key_value.Empty().
-		Set("block_number", uint_number).
-		Set("block_timestamp", uint_timestamp)
+	uintNumber := uint64(10)
+	uintTimestamp := uint64(123)
+	uintMap := key_value.Empty().
+		Set("block_number", uintNumber).
+		Set("block_timestamp", uintTimestamp)
 
-	header, _ := NewHeader(uint_number, uint_timestamp)
-	map_header, err := NewHeaderFromKeyValueParameter(uint_map)
+	header, _ := NewHeader(uintNumber, uintTimestamp)
+	mapHeader, err := NewHeaderFromKeyValueParameter(uintMap)
 	suite.Require().NoError(err)
-	number, _ := NewNumber(uint_number)
-	map_number, err := NewNumberFromKeyValueParameter(uint_map)
+	number, _ := NewNumber(uintNumber)
+	mapNumber, err := NewNumberFromKeyValueParameter(uintMap)
 	suite.Require().NoError(err)
-	timestamp, _ := NewTimestamp(uint_timestamp)
-	map_timestamp, err := NewTimestampFromKeyValueParameter(uint_map)
+	timestamp, _ := NewTimestamp(uintTimestamp)
+	mapTimestamp, err := NewTimestampFromKeyValueParameter(uintMap)
 	suite.Require().NoError(err)
 
-	suite.Require().Equal(header, map_header)
-	suite.Require().Equal(header.Number.Value(), uint_number)
+	suite.Require().Equal(header, mapHeader)
+	suite.Require().Equal(header.Number.Value(), uintNumber)
 	suite.Require().Equal(header.Number, number)
-	suite.Require().Equal(header.Number, map_number)
-	suite.Require().Equal(header.Timestamp.Value(), uint_timestamp)
+	suite.Require().Equal(header.Number, mapNumber)
+	suite.Require().Equal(header.Timestamp.Value(), uintTimestamp)
 	suite.Require().Equal(header.Timestamp, timestamp)
-	suite.Require().Equal(header.Timestamp, map_timestamp)
+	suite.Require().Equal(header.Timestamp, mapTimestamp)
 
 	suite.header = header
 
 	// Missing both parameters
-	empty_map := key_value.Empty()
-	_, err = NewHeaderFromKeyValueParameter(empty_map)
+	emptyMap := key_value.Empty()
+	_, err = NewHeaderFromKeyValueParameter(emptyMap)
 	suite.Require().Error(err)
 
 	// Missing timestamp, should fail
-	no_timestamp_map := key_value.Empty().
-		Set("block_number", uint_number)
-	_, err = NewHeaderFromKeyValueParameter(no_timestamp_map)
+	noTimestampMap := key_value.Empty().
+		Set("block_number", uintNumber)
+	_, err = NewHeaderFromKeyValueParameter(noTimestampMap)
 	suite.Require().Error(err)
 
 	// Missing timestamp, should fail
-	no_number_map := key_value.Empty().
-		Set("block_timestamp", uint_timestamp)
-	_, err = NewHeaderFromKeyValueParameter(no_number_map)
+	noNumberMap := key_value.Empty().
+		Set("block_timestamp", uintTimestamp)
+	_, err = NewHeaderFromKeyValueParameter(noNumberMap)
 	suite.Require().Error(err)
 }
 
 func (suite *TestBlockHeaderSuite) TestValueChange() {
 	number, _ := NewNumber(11)
-	suite.Equal(number, suite.header.Number.Increment())
+	suite.header.Number.Increment()
+	suite.Equal(number, suite.header.Number)
 }
 
 // In order for 'go test' to run this suite, we need to create

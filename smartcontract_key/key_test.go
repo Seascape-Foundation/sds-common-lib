@@ -18,71 +18,71 @@ type TestKeySuite struct {
 }
 
 func (suite *TestKeySuite) SetupTest() {
-	network_id := "1"
+	networkId := "1"
 	address := "0x123"
-	uint_map := key_value.Empty().
-		Set("network_id", network_id).
+	uintMap := key_value.Empty().
+		Set("network_id", networkId).
 		Set("address", address)
 
-	key, _ := New(network_id, address)
-	suite.Require().Equal(network_id, key.NetworkId)
+	key, _ := New(networkId, address)
+	suite.Require().Equal(networkId, key.NetworkId)
 	suite.Require().Equal(address, key.Address)
 
-	map_key, err := NewFromKeyValue(uint_map)
+	mapKey, err := NewFromKeyValue(uintMap)
 	suite.Require().NoError(err)
-	suite.Require().Equal(network_id, map_key.NetworkId)
-	suite.Require().Equal(address, map_key.Address)
+	suite.Require().Equal(networkId, mapKey.NetworkId)
+	suite.Require().Equal(address, mapKey.Address)
 
-	uint_map = key_value.Empty().
+	uintMap = key_value.Empty().
 		Set("address", address)
-	_, err = NewFromKeyValue(uint_map)
+	_, err = NewFromKeyValue(uintMap)
 	suite.Require().Error(err)
 
-	uint_map = key_value.Empty().
-		Set("network_id", network_id)
-	_, err = NewFromKeyValue(uint_map)
+	uintMap = key_value.Empty().
+		Set("network_id", networkId)
+	_, err = NewFromKeyValue(uintMap)
 	suite.Require().Error(err)
 
-	uint_map = key_value.Empty()
-	_, err = NewFromKeyValue(uint_map)
+	uintMap = key_value.Empty()
+	_, err = NewFromKeyValue(uintMap)
 	suite.Require().Error(err)
 
-	uint_map = key_value.Empty().
-		Set("network_id", network_id).
+	uintMap = key_value.Empty().
+		Set("network_id", networkId).
 		Set("address", address).
 		Set("additional_param", uint64(1))
-	_, err = NewFromKeyValue(uint_map)
+	_, err = NewFromKeyValue(uintMap)
 	suite.Require().NoError(err)
 
 	suite.key = key
 }
 
 func (suite *TestKeySuite) TestToString() {
-	key_string := "1.0x123"
-	suite.Require().Equal(key_string, suite.key.ToString())
+	keyString := "1.0x123"
+	suite.Require().Equal(keyString, suite.key.String())
 
-	key, err := NewFromString(key_string)
+	key, err := NewFromString(keyString)
 	suite.Require().NoError(err)
 	suite.Require().Equal(suite.key, key)
 
-	no_network_string := ".0x123"
-	_, err = NewFromString(no_network_string)
+	noNetworkString := ".0x123"
+	_, err = NewFromString(noNetworkString)
 	suite.Require().Error(err)
 
-	no_address := "1."
-	_, err = NewFromString(no_address)
+	noAddress := "1."
+	_, err = NewFromString(noAddress)
 	suite.Require().Error(err)
 
-	no_parameters := "."
-	_, err = NewFromString(no_parameters)
+	noParameters := "."
+	_, err = NewFromString(noParameters)
 	suite.Require().Error(err)
 
 	empty := ""
 	_, err = NewFromString(empty)
 	suite.Require().Error(err)
 
-	too_many_parameters := "1.0x1232.123213"
-	_, err = NewFromString(too_many_parameters)
+	tooManyParameters := "1.0x1232.123213"
+	_, err = NewFromString(tooManyParameters)
 	suite.Require().Error(err)
 
 }

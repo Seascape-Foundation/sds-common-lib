@@ -4,7 +4,7 @@ import (
 	"github.com/Seascape-Foundation/sds-common-lib/data_type/key_value"
 )
 
-// Struct interface adds the database CRUD to the data struct.
+// Crud interface adds the database CRUD operations to the data struct.
 //
 // The interface that it accepts is the *remote.ClientSocket from the
 // "github.com/Seascape-Foundation/sds-service-lib/remote" package.
@@ -16,15 +16,15 @@ type Crud interface {
 
 	// Insert into the database. It calls INSERT command
 	Insert(interface{}) error
-	// Load the database from database. It calls SELECT_ROW command
+	// Select selects the single row from the database. It calls SELECT_ROW command
 	Select(interface{}) error
 
-	// It calls SELECT_ALL without WHERE clause of query.
+	// SelectAll selects the multiple rows from the database. It calls SELECT_ALL without WHERE clause of query.
 	//
 	// Result is then put to the second argument
 	SelectAll(interface{}, interface{}) error
 
-	// AllByCondition returns structs from database to the second argument.
+	// SelectAllByCondition returns structs from database to the second argument.
 	// The sql query should match to the condition.
 	//
 	// It calls SELECT_ALL with WHERE clause

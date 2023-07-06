@@ -15,7 +15,7 @@ type TestSerializerSuite struct {
 	suite.Suite
 }
 
-// Setup
+// SetupTest prepares the test.
 // Setup checks the New() functions
 // Setup checks ToMap() functions
 func (suite *TestSerializerSuite) SetupTest() {
@@ -34,16 +34,16 @@ func (suite *TestSerializerSuite) TestSerialization() {
 	expected := `{"param_1":"hello","param_2":5}`
 	suite.Require().EqualValues(expected, string(body))
 
-	var new_sample Item
-	err = Deserialize(body, &new_sample)
+	var newSample Item
+	err = Deserialize(body, &newSample)
 	suite.Require().NoError(err)
-	suite.Require().EqualValues(new_sample, sample)
+	suite.Require().EqualValues(newSample, sample)
 
 	// try to serialize without passing the reference
-	var no_ref Item
-	err = Deserialize(body, no_ref)
+	var noRef Item
+	err = Deserialize(body, noRef)
 	suite.Require().Error(err)
-	suite.Require().Empty(no_ref)
+	suite.Require().Empty(noRef)
 }
 
 // In order for 'go test' to run this suite, we need to create

@@ -14,14 +14,14 @@ import (
 )
 
 type Queue struct {
-	l            *list.List
-	length       int
-	element_type reflect.Type
+	l           *list.List
+	length      int
+	elementType reflect.Type
 }
 
-const QUEUE_LENGTH = 10
+const QueueLength = 10
 
-// Queue of the elements that could contain
+// NewQueue returns the queue of the elements that could contain
 // maximum QUEUE_LENGTH amount of elements.
 //
 // The queue has a function that returns the first element
@@ -30,9 +30,9 @@ const QUEUE_LENGTH = 10
 // The added elements attached after the last element.
 func NewQueue() *Queue {
 	return &Queue{
-		element_type: nil,
-		length:       QUEUE_LENGTH,
-		l:            list.New(),
+		elementType: nil,
+		length:      QueueLength,
+		l:           list.New(),
 	}
 }
 
@@ -48,7 +48,7 @@ func (q *Queue) IsFull() bool {
 	return q.l.Len() == q.length
 }
 
-// Adds the element to the queue.
+// Push the element into the queue.
 // If the element type is not the same as
 // the expected type, then
 // It will silently drop it.
@@ -57,15 +57,15 @@ func (q *Queue) Push(item interface{}) {
 	if q.IsFull() {
 		return
 	}
-	if q.element_type == nil {
-		q.element_type = reflect.TypeOf(item)
+	if q.elementType == nil {
+		q.elementType = reflect.TypeOf(item)
 		q.l.PushBack(item)
-	} else if reflect.TypeOf(item) == q.element_type {
+	} else if reflect.TypeOf(item) == q.elementType {
 		q.l.PushBack(item)
 	}
 }
 
-// Returns the first element without removing it from the queue
+// First returns the first element without removing it from the queue
 // If there is no element, then returns nil
 func (q *Queue) First() interface{} {
 	if q.IsEmpty() {
@@ -74,7 +74,7 @@ func (q *Queue) First() interface{} {
 	return q.l.Front().Value
 }
 
-// Takes from the list and returns it.
+// Pop takes the first element from the list and returns it.
 // If there is no element in the list, then returns nil
 func (q *Queue) Pop() interface{} {
 	if q.IsEmpty() {

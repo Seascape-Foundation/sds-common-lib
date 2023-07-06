@@ -20,15 +20,15 @@ import (
 // for each level
 type TestTopicFilterSuite struct {
 	suite.Suite
-	topic        *TopicFilter
-	topic_string TopicString
+	topic       *Filter
+	topicString String
 }
 
-// Setup
+// SetupTest
 // Setup checks the New() functions
 // Setup checks ToMap() functions
 func (suite *TestTopicFilterSuite) SetupTest() {
-	sample := TopicFilter{
+	sample := Filter{
 		Organizations:  []string{"seascape"},
 		Projects:       []string{"sds-core"},
 		NetworkIds:     []string{"1", "56", "imx"},
@@ -36,12 +36,12 @@ func (suite *TestTopicFilterSuite) SetupTest() {
 		Smartcontracts: []string{"TestErc20"},
 		Events:         []string{"Transfer"},
 	}
-	topic_string := AsTopicString(`o:seascape;p:sds-core;n:1,56,imx;g:test-suite;s:TestErc20;e:Transfer`)
+	topicString := AsTopicString(`o:seascape;p:sds-core;n:1,56,imx;g:test-suite;s:TestErc20;e:Transfer`)
 
 	suite.topic = &sample
-	suite.topic_string = topic_string
+	suite.topicString = topicString
 
-	suite.Require().Equal(topic_string, sample.ToString())
+	suite.Require().Equal(topicString, sample.String())
 }
 
 func (suite *TestTopicFilterSuite) TestKvParameterParsing() {
@@ -71,7 +71,7 @@ func (suite *TestTopicFilterSuite) TestKvParameterParsing() {
 	suite.Require().NoError(err)
 
 	// TopicFilter is not a struct
-	expected := TopicFilter{
+	expected := Filter{
 		Organizations:  []string{"seascape"},
 		Projects:       []string{"sds-core"},
 		NetworkIds:     []string{"1", "56", "imx"},
@@ -84,27 +84,27 @@ func (suite *TestTopicFilterSuite) TestKvParameterParsing() {
 	suite.Require().Error(err)
 
 	// filter with the parameters should be fine
-	sample_kv, err := key_value.NewFromInterface(expected)
+	sampleKv, err := key_value.NewFromInterface(expected)
 	suite.Require().NoError(err)
 
-	kv.Set("topic_filter", sample_kv)
-	from_kv, err := NewFromKeyValueParameter(kv)
+	kv.Set("topic_filter", sampleKv)
+	fromKv, err := NewFromKeyValueParameter(kv)
 	suite.Require().NoError(err)
 
-	kv.Set("topic_filter", sample_kv.ToMap())
-	fom_map, err := NewFromKeyValueParameter(kv)
+	kv.Set("topic_filter", sampleKv.Map())
+	fromMap, err := NewFromKeyValueParameter(kv)
 	suite.Require().NoError(err)
 
-	suite.Require().EqualValues(expected, *from_kv)
-	suite.Require().EqualValues(expected, *fom_map)
+	suite.Require().EqualValues(expected, *fromKv)
+	suite.Require().EqualValues(expected, *fromMap)
 }
 
 func (suite *TestTopicFilterSuite) TestToString() {
-	empty := TopicFilter{}
-	topic_string := empty.ToString()
-	suite.Require().Empty(topic_string)
+	empty := Filter{}
+	topicString := empty.String()
+	suite.Require().Empty(topicString)
 
-	expected := TopicFilter{
+	expected := Filter{
 		Organizations:  []string{"seascape"},
 		Projects:       []string{"sds-core"},
 		NetworkIds:     []string{"1", "56", "imx"},
@@ -112,21 +112,21 @@ func (suite *TestTopicFilterSuite) TestToString() {
 		Smartcontracts: []string{"TestErc20"},
 		Events:         []string{"Transfer"},
 	}
-	topic_string = expected.ToString()
-	expected_topic_string := TopicString(`o:seascape;p:sds-core;n:1,56,imx;g:test-suite;s:TestErc20;e:Transfer`)
-	suite.Require().EqualValues(expected_topic_string, topic_string)
+	topicString = expected.String()
+	expectedTopicString := String(`o:seascape;p:sds-core;n:1,56,imx;g:test-suite;s:TestErc20;e:Transfer`)
+	suite.Require().EqualValues(expectedTopicString, topicString)
 
 	// some parameters are missing
-	expected = TopicFilter{
+	expected = Filter{
 		Organizations:  []string{"seascape"},
 		Projects:       []string{"sds-core"},
 		Groups:         []string{"test-suite"},
 		Smartcontracts: []string{"TestErc20"},
 		Events:         []string{"Transfer"},
 	}
-	topic_string = expected.ToString()
-	expected_topic_string = TopicString(`o:seascape;p:sds-core;g:test-suite;s:TestErc20;e:Transfer`)
-	suite.Require().EqualValues(expected_topic_string, topic_string)
+	topicString = expected.String()
+	expectedTopicString = `o:seascape;p:sds-core;g:test-suite;s:TestErc20;e:Transfer`
+	suite.Require().EqualValues(expectedTopicString, topicString)
 }
 
 // In order for 'go test' to run this suite, we need to create

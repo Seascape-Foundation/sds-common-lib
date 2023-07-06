@@ -25,6 +25,6 @@ func DecodeJsonPrefixed(str string) string {
 		return ""
 	}
 
-	unprefixed := str[9:]
-	return unprefixed
+	withoutPrefix := str[9:]
+	return withoutPrefix
 }

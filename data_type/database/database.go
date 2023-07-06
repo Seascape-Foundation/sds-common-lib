@@ -20,8 +20,8 @@ import (
 //
 // If the data type wasn't detected, then
 // it returns an empty result.
-func detect_type(database_type *sql.ColumnType) string {
-	switch database_type.DatabaseTypeName() {
+func detectType(databaseType *sql.ColumnType) string {
+	switch databaseType.DatabaseTypeName() {
 	case "VARCHAR":
 		return "string"
 	case "JSON":
@@ -38,19 +38,19 @@ func detect_type(database_type *sql.ColumnType) string {
 	return ""
 }
 
-// Set the value into kv KeyValue,
-// but first converting it into the desired
+// SetValue sets the value into kv KeyValue.
+// Before setting, the function converts the value into the desired
 // golang parameter
-func SetValue(kv key_value.KeyValue, database_type *sql.ColumnType, raw interface{}) error {
-	golang_type := detect_type(database_type)
-	if golang_type == "" {
-		return fmt.Errorf("unsupported database type %s", database_type.DatabaseTypeName())
+func SetValue(kv key_value.KeyValue, databaseType *sql.ColumnType, raw interface{}) error {
+	golangType := detectType(databaseType)
+	if golangType == "" {
+		return fmt.Errorf("unsupported database type %s", databaseType.DatabaseTypeName())
 	}
 
-	switch golang_type {
+	switch golangType {
 	case "string":
 		if raw == nil {
-			kv.Set(database_type.Name(), "")
+			kv.Set(databaseType.Name(), "")
 			return nil
 		}
 		value, ok := raw.(string)
@@ -59,14 +59,14 @@ func SetValue(kv key_value.KeyValue, database_type *sql.ColumnType, raw interfac
 			if !ok {
 				return fmt.Errorf("couldn't convert %v of type %T into 'string'", raw, raw)
 			}
-			kv.Set(database_type.Name(), string(bytes))
+			kv.Set(databaseType.Name(), string(bytes))
 			return nil
 		}
-		kv.Set(database_type.Name(), value)
+		kv.Set(databaseType.Name(), value)
 		return nil
 	case "json":
 		if raw == nil {
-			kv.Set(database_type.Name(), []byte{})
+			kv.Set(databaseType.Name(), []byte{})
 			return nil
 		}
 
@@ -74,11 +74,11 @@ func SetValue(kv key_value.KeyValue, database_type *sql.ColumnType, raw interfac
 		if !ok {
 			return fmt.Errorf("database value is expected to be '[]byte', but value %v of type %T", raw, raw)
 		}
-		kv.Set(database_type.Name(), data_type.AddJsonPrefix(value))
+		kv.Set(databaseType.Name(), data_type.AddJsonPrefix(value))
 		return nil
 	case "int64":
 		if raw == nil {
-			kv.Set(database_type.Name(), int64(0))
+			kv.Set(databaseType.Name(), int64(0))
 			return nil
 		}
 		value, ok := raw.(int64)
@@ -91,37 +91,37 @@ func SetValue(kv key_value.KeyValue, database_type *sql.ColumnType, raw interfac
 			if err != nil {
 				return fmt.Errorf("strconv.ParseInt: %w", err)
 			}
-			kv.Set(database_type.Name(), data)
+			kv.Set(databaseType.Name(), data)
 			return nil
 		}
-		kv.Set(database_type.Name(), value)
+		kv.Set(databaseType.Name(), value)
 		return nil
 	case "uint64":
 		if raw == nil {
-			kv.Set(database_type.Name(), uint64(0))
+			kv.Set(databaseType.Name(), uint64(0))
 			return nil
 		}
 		value, ok := raw.(uint64)
 		if !ok {
 			bytes, ok := raw.([]byte)
 			if !ok {
-				new_value, ok := raw.(int64)
+				newValue, ok := raw.(int64)
 				if !ok {
 					return fmt.Errorf("couldn't convert %v of type %T into 'uint64'", raw, raw)
 				}
-				kv.Set(database_type.Name(), new_value)
+				kv.Set(databaseType.Name(), newValue)
 				return nil
 			}
 			data, err := strconv.ParseUint(string(bytes), 10, 64)
 			if err != nil {
 				return fmt.Errorf("strconv.ParseUint: %w", err)
 			}
-			kv.Set(database_type.Name(), data)
+			kv.Set(databaseType.Name(), data)
 			return nil
 		}
-		kv.Set(database_type.Name(), value)
+		kv.Set(databaseType.Name(), value)
 		return nil
 	}
 
-	return fmt.Errorf("no switch/case for setting value into KeyValue for %s field of %s type", database_type.Name(), golang_type)
+	return fmt.Errorf("no switch/case for setting value into KeyValue for %s field of %s type", databaseType.Name(), golangType)
 }

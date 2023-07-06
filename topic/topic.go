@@ -10,9 +10,9 @@ import (
 )
 
 type (
-	// Topic String is the string represantion of
+	// String is the string representation of
 	// the topic or topic filter
-	TopicString string
+	String string
 	// Topic defines the smartcontract path in SDS
 	Topic struct {
 		Organization  string `json:"o,omitempty"`
@@ -24,26 +24,14 @@ type (
 	}
 )
 
-// Converts the string to the TopicString
-func AsTopicString(topic_string string) TopicString {
-	return TopicString(topic_string)
+// AsTopicString Converts the string to the TopicString
+func AsTopicString(topicString string) String {
+	return String(topicString)
 }
 
 // Convert the TopicString to string
-func (topic_string TopicString) String() string {
-	return string(topic_string)
-}
-
-// New topic from the parameters
-func New(o string, p string, n string, g string, s string, e string) Topic {
-	return Topic{
-		Organization:  o,
-		Project:       p,
-		NetworkId:     n,
-		Group:         g,
-		Smartcontract: s,
-		Event:         e,
-	}
+func (topicString String) String() string {
+	return string(topicString)
 }
 
 // Converts the topic to the TopicString
@@ -52,18 +40,18 @@ func New(o string, p string, n string, g string, s string, e string) Topic {
 //
 // Doesn't matter which topic level user want's get
 // All topic should be equal
-func (t *Topic) ToString(level uint8) TopicString {
+func (t *Topic) String(level uint8) String {
 	if level < 1 || level > 6 {
-		return TopicString("")
+		return ""
 	}
-	err := t.validate_missing_level(t.Level())
+	err := t.validateMissingLevel(t.Level())
 	if err != nil {
-		return TopicString("")
+		return ""
 	}
 	// we request inner level,
-	// when its not given in the topic
+	// when it's not given in the topic
 	if t.Level() < level {
-		return TopicString("")
+		return ""
 	}
 
 	str := ""
@@ -88,36 +76,36 @@ func (t *Topic) ToString(level uint8) TopicString {
 		str += ";e:" + t.Event
 	}
 
-	return TopicString(str)
+	return String(str)
 }
 
-// Calculates the level
+// Level Calculates the level
 // From the bottom level to up.
-// If its an empty, then it returns 0
+// If it's an empty, then it returns 0
 func (t *Topic) Level() uint8 {
 	if len(t.Event) > 0 {
-		return FULL_LEVEL
+		return FullLevel
 	}
 	if len(t.Smartcontract) > 0 {
-		return SMARTCONTRACT_LEVEL
+		return SmartcontractLevel
 	}
 	if len(t.Group) > 0 {
-		return GROUP_LEVEL
+		return GroupLevel
 	}
 	if len(t.NetworkId) > 0 {
-		return NETWORK_ID_LEVEL
+		return NetworkIdLevel
 	}
 	if len(t.Project) > 0 {
-		return PROJECT_LEVEL
+		return ProjectLevel
 	}
 	if len(t.Organization) > 0 {
-		return ORGANIZATION_LEVEL
+		return OrganizationLevel
 	}
 
 	return 0
 }
 
-// Parse JSON into the Topic
+// ParseJSON Parse JSON into the Topic
 func ParseJSON(parameters key_value.KeyValue) (*Topic, error) {
 	organization, err := parameters.GetString("o")
 	if err != nil {
@@ -142,9 +130,9 @@ func ParseJSON(parameters key_value.KeyValue) (*Topic, error) {
 		Event:         "",
 	}
 
-	network_id, err := parameters.GetString("n")
+	networkId, err := parameters.GetString("n")
 	if err == nil {
-		topic.NetworkId = network_id
+		topic.NetworkId = networkId
 	}
 
 	group, err := parameters.GetString("g")
@@ -162,7 +150,7 @@ func ParseJSON(parameters key_value.KeyValue) (*Topic, error) {
 		topic.Event = event
 	}
 
-	err = topic.validate_missing_level(topic.Level())
+	err = topic.validateMissingLevel(topic.Level())
 	if err != nil {
 		return nil, fmt.Errorf("missing upper level: %w", err)
 	}
@@ -170,17 +158,17 @@ func ParseJSON(parameters key_value.KeyValue) (*Topic, error) {
 	return &topic, nil
 }
 
-func is_path_name(name string) bool {
+func isPathName(name string) bool {
 	return name == "o" || name == "p" || name == "n" || name == "g" || name == "s" || name == "e"
 }
 
 // the name should be valid literal
 // it's only alphanumeric characters, - and _
-func is_literal(val string) bool {
+func isLiteral(val string) bool {
 	return regexp.MustCompile(`^[A-Za-z0-9 _-]*$`).MatchString(val)
 }
 
-func (t *Topic) set_path(path string, val string) error {
+func (t *Topic) setPath(path string, val string) error {
 	switch path {
 	case "o":
 		if len(t.Organization) > 0 {
@@ -226,41 +214,41 @@ func (t *Topic) set_path(path string, val string) error {
 // The topic paths are in the order.
 // The order is called level.
 // If the bottom level's value is given, then the top
-// level's parameters should be given too
+// level's parameters should be given too.
 //
 // Make sure that the upper level parameter is set.
-func (t *Topic) validate_missing_level(level uint8) error {
+func (t *Topic) validateMissingLevel(level uint8) error {
 	switch level {
-	case ORGANIZATION_LEVEL:
+	case OrganizationLevel:
 		if len(t.Organization) == 0 {
 			return fmt.Errorf("missing organization")
 		}
 		return nil
-	case PROJECT_LEVEL:
+	case ProjectLevel:
 		if len(t.Project) == 0 {
 			return fmt.Errorf("missing project")
 		}
-		return t.validate_missing_level(ORGANIZATION_LEVEL)
-	case NETWORK_ID_LEVEL:
+		return t.validateMissingLevel(OrganizationLevel)
+	case NetworkIdLevel:
 		if len(t.NetworkId) == 0 {
 			return fmt.Errorf("missing network id")
 		}
-		return t.validate_missing_level(PROJECT_LEVEL)
-	case GROUP_LEVEL:
+		return t.validateMissingLevel(ProjectLevel)
+	case GroupLevel:
 		if len(t.Group) == 0 {
 			return fmt.Errorf("missing group")
 		}
-		return t.validate_missing_level(NETWORK_ID_LEVEL)
-	case SMARTCONTRACT_LEVEL:
+		return t.validateMissingLevel(NetworkIdLevel)
+	case SmartcontractLevel:
 		if len(t.Smartcontract) == 0 {
 			return fmt.Errorf("missing smartcontract")
 		}
-		return t.validate_missing_level(GROUP_LEVEL)
-	case FULL_LEVEL:
+		return t.validateMissingLevel(GroupLevel)
+	case FullLevel:
 		if len(t.Event) == 0 {
 			return fmt.Errorf("missing event")
 		}
-		return t.validate_missing_level(SMARTCONTRACT_LEVEL)
+		return t.validateMissingLevel(SmartcontractLevel)
 	default:
 		return fmt.Errorf("unsupported level")
 	}
@@ -268,14 +256,14 @@ func (t *Topic) validate_missing_level(level uint8) error {
 
 // Validate the topic for empty values, for valid names.
 // The topic parameters should be defined as literals in popular programming languages.
-// Finally the path of topic if it's converted to the TopicString should be valid as well.
+// Finally, the path of topic if it's converted to the TopicString should be valid as well.
 //
 // That means, if user wants to create a topic to access t.Project, then it's upper parent
 // the t.Organization should be defined as well.
 // But other topic parameters could be left as empty.
 func (t *Topic) Validate() error {
 	level := t.Level()
-	str := t.ToString(level)
+	str := t.String(level)
 	_, err := ParseString(str)
 	if err != nil {
 		return fmt.Errorf("failed to validate: %w", err)
@@ -284,7 +272,7 @@ func (t *Topic) Validate() error {
 	return nil
 }
 
-// This method converts Topic String to the Topic Struct.
+// ParseString This method converts Topic String to the Topic Struct.
 //
 // The topic string is provided in the following string format:
 //
@@ -296,43 +284,43 @@ func (t *Topic) Validate() error {
 // Rules
 //
 //   - the topic string can have either `method` or `event` but not both at the same time.
-//   - Topic string should contain atleast 'organization' and 'project'
+//   - Topic string should contain at least 'organization' and 'project'
 //   - Order of the path names does not matter: o:org;p:proj == p:proj;o:org
 //   - The values between `<` and `>` are literals and should return true by `is_literal(literal)` function
-func ParseString(topic_string TopicString) (Topic, error) {
-	parts := strings.Split(topic_string.String(), ";")
+func ParseString(topicString String) (Topic, error) {
+	parts := strings.Split(topicString.String(), ";")
 	length := len(parts)
 	if length < 2 {
-		return Topic{}, fmt.Errorf("%s should have atleast 2 parts divided by ';'", topic_string)
+		return Topic{}, fmt.Errorf("%s should have atleast 2 parts divided by ';'", topicString)
 	}
 
 	if length > 6 {
-		return Topic{}, fmt.Errorf("%s should have at most 6 parts divided by ';'", topic_string)
+		return Topic{}, fmt.Errorf("%s should have at most 6 parts divided by ';'", topicString)
 	}
 
 	t := Topic{}
 
 	for i, part := range parts {
-		key_value := strings.Split(part, ":")
-		if len(key_value) != 2 {
+		keyValue := strings.Split(part, ":")
+		if len(keyValue) != 2 {
 			return Topic{}, fmt.Errorf("part[%d] is %s, it can't be divided to two elements by ':'", i, part)
 		}
 
-		if !is_path_name(key_value[0]) {
-			return Topic{}, fmt.Errorf("part[%d] is_path_name(%s) false", i, key_value[0])
+		if !isPathName(keyValue[0]) {
+			return Topic{}, fmt.Errorf("part[%d] is_path_name(%s) false", i, keyValue[0])
 		}
 
-		if !is_literal(key_value[1]) {
-			return Topic{}, fmt.Errorf("part[%d] ('%s') is_literal(%v) false", i, key_value[0], key_value[1])
+		if !isLiteral(keyValue[1]) {
+			return Topic{}, fmt.Errorf("part[%d] ('%s') is_literal(%v) false", i, keyValue[0], keyValue[1])
 		}
 
-		err := t.set_path(key_value[0], key_value[1])
+		err := t.setPath(keyValue[0], keyValue[1])
 		if err != nil {
 			return t, fmt.Errorf("part[%d] set_path: %w", i, err)
 		}
 	}
 
-	err := t.validate_missing_level(t.Level())
+	err := t.validateMissingLevel(t.Level())
 	if err != nil {
 		return Topic{}, fmt.Errorf("missing upper level: %w", err)
 	}
@@ -340,9 +328,9 @@ func ParseString(topic_string TopicString) (Topic, error) {
 	return t, nil
 }
 
-const ORGANIZATION_LEVEL uint8 = 1  // only organization.
-const PROJECT_LEVEL uint8 = 2       // only organization and project.
-const NETWORK_ID_LEVEL uint8 = 3    // only organization, project and, network id.
-const GROUP_LEVEL uint8 = 4         // only organization and project, network id and group.
-const SMARTCONTRACT_LEVEL uint8 = 5 // smartcontract level path, till the smartcontract of the smartcontract
-const FULL_LEVEL uint8 = 6          // full topic path
+const OrganizationLevel uint8 = 1  // only organization.
+const ProjectLevel uint8 = 2       // only organization and project.
+const NetworkIdLevel uint8 = 3     // only organization, project and, network id.
+const GroupLevel uint8 = 4         // only organization and project, network id and group.
+const SmartcontractLevel uint8 = 5 // smartcontract level path, till the smartcontract of the smartcontract
+const FullLevel uint8 = 6          // full topic path

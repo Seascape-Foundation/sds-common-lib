@@ -16,7 +16,7 @@ type TestListQueue struct {
 	list *List
 }
 
-// Setup
+// SetupTest
 // Setup checks the New() functions
 // Setup checks ToMap() functions
 func (suite *TestListQueue) SetupTest() {
@@ -31,16 +31,16 @@ func (suite *TestListQueue) SetupTest() {
 
 func (suite *TestListQueue) TestAddGet() {
 	type Item struct {
-		param_1 string
-		param_2 uint64
+		param1 string
+		param2 uint64
 	}
 	// This type of data can not be added if the first
 	// element was added
 	type InvalidItem struct {
-		param_1 string
-		param_2 uint64
+		param1 string
+		param2 uint64
 	}
-	sample := Item{param_1: "hello", param_2: uint64(0)}
+	sample := Item{param1: "hello", param2: uint64(0)}
 	err := suite.list.Add(uint64(1), sample)
 	suite.Require().NoError(err)
 	suite.Require().EqualValues(suite.list.Len(), 1)
@@ -49,13 +49,13 @@ func (suite *TestListQueue) TestAddGet() {
 
 	// the value type are not matching
 	// therefore it should fail
-	invalid_sample := InvalidItem{param_1: "hello", param_2: uint64(0)}
-	err = suite.list.Add(uint64(2), invalid_sample)
+	invalidSample := InvalidItem{param1: "hello", param2: uint64(0)}
+	err = suite.list.Add(uint64(2), invalidSample)
 	suite.Require().Error(err)
 	suite.Require().EqualValues(suite.list.Len(), 1)
 
 	// invalid type
-	// already addded by value, now pointer type is not valid
+	// already added by value, now pointer type is not valid
 	err = suite.list.Add(uint64(3), &sample)
 	suite.Require().Error(err)
 
@@ -74,13 +74,13 @@ func (suite *TestListQueue) TestAddGet() {
 
 	// get the data
 	list := suite.list.List()
-	list_sample := list[uint64(1)].(Item)
-	suite.Require().EqualValues(sample, list_sample)
+	listSample := list[uint64(1)].(Item)
+	suite.Require().EqualValues(sample, listSample)
 
 	// should be successful
-	returned_sample, err := suite.list.Get(uint64(1))
+	returnedSample, err := suite.list.Get(uint64(1))
 	suite.Require().NoError(err)
-	suite.Require().EqualValues(sample, returned_sample)
+	suite.Require().EqualValues(sample, returnedSample)
 
 	// should fail since key doesn't exist
 	_, err = suite.list.Get(uint64(10))
@@ -93,19 +93,19 @@ func (suite *TestListQueue) TestAddGet() {
 }
 
 func (suite *TestListQueue) TestListLimit() {
-	new_list := NewList()
+	newList := NewList()
 
 	// index till QUEUE_LENGTH - 2
-	for i := 0; i < LIST_LENGTH; i++ {
-		err := new_list.Add(i, i*2)
+	for i := 0; i < ListLength; i++ {
+		err := newList.Add(i, i*2)
 		suite.Require().NoError(err)
 	}
 
-	suite.Require().True(new_list.IsFull())
-	suite.Require().Equal(new_list.Len(), LIST_LENGTH)
+	suite.Require().True(newList.IsFull())
+	suite.Require().Equal(newList.Len(), ListLength)
 
 	// can not add when the new list is full
-	err := new_list.Add(LIST_LENGTH, LIST_LENGTH*2)
+	err := newList.Add(ListLength, ListLength*2)
 	suite.Require().Error(err)
 }
 

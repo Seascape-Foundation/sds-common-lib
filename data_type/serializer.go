@@ -15,7 +15,7 @@ func IsPointer(body interface{}) bool {
 	return v.Kind() == reflect.Ptr
 }
 
-// Wraps the JSON abi interface to the internal data type.
+// Serialize wraps the JSON abi interface to the internal data type.
 // It's blockchain agnostic.
 func Serialize(body interface{}) ([]byte, error) {
 	if IsPointer(body) {

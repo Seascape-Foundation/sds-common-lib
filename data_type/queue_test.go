@@ -16,7 +16,7 @@ type TestQueueSuite struct {
 	key *Queue
 }
 
-// Setup
+// SetupTest prepares the test.
 // Setup checks the New() functions
 // Setup checks ToMap() functions
 func (suite *TestQueueSuite) SetupTest() {
@@ -32,29 +32,29 @@ func (suite *TestQueueSuite) SetupTest() {
 
 func (suite *TestQueueSuite) TestPushPull() {
 	type Item struct {
-		param_1 string
-		param_2 uint64
+		param1 string
+		param2 uint64
 	}
 	// This type of data can not be added if the first
 	// element was added
 	type InvalidItem struct {
-		param_1 string
-		param_2 uint64
+		param1 string
+		param2 uint64
 	}
-	sample := Item{param_1: "hello", param_2: uint64(0)}
+	sample := Item{param1: "hello", param2: uint64(0)}
 	suite.key.Push(&sample)
 	suite.Require().EqualValues(suite.key.Len(), 1)
 	suite.Require().False(suite.key.IsFull())
 	suite.Require().False(suite.key.IsEmpty())
 
 	// silently skip adding of the element of another type
-	invalid_sample := InvalidItem{param_1: "hello", param_2: uint64(0)}
-	suite.key.Push(invalid_sample)
+	invalidSample := InvalidItem{param1: "hello", param2: uint64(0)}
+	suite.key.Push(invalidSample)
 	suite.Require().EqualValues(suite.key.Len(), 1)
 
 	// index till QUEUE_LENGTH - 2
 	for i := 1; i <= 8; i++ {
-		sample := Item{param_1: "hello", param_2: uint64(i)}
+		sample := Item{param1: "hello", param2: uint64(i)}
 		suite.key.Push(&sample)
 		suite.Require().EqualValues(suite.key.Len(), i+1)
 		suite.Require().False(suite.key.IsFull())
@@ -62,14 +62,14 @@ func (suite *TestQueueSuite) TestPushPull() {
 	}
 
 	// add the last element so the length should be equal to QUEUE_LENGTH
-	sample = Item{param_1: "hello", param_2: uint64(0)}
+	sample = Item{param1: "hello", param2: uint64(0)}
 	suite.key.Push(&sample)
 	suite.Require().EqualValues(suite.key.Len(), 10)
 	suite.Require().True(suite.key.IsFull())
 	suite.Require().False(suite.key.IsEmpty())
 
 	// should not add more element if the queue is full
-	sample = Item{param_1: "hello", param_2: uint64(11)}
+	sample = Item{param1: "hello", param2: uint64(11)}
 	suite.key.Push(&sample)
 	suite.Require().EqualValues(suite.key.Len(), 10)
 
@@ -104,7 +104,7 @@ func (suite *TestQueueSuite) TestPushPull() {
 	// index till QUEUE_LENGTH
 	// pops up the first element
 	for i := 0; i < 10; i++ {
-		sample := Item{param_1: "hello", param_2: uint64(i)}
+		sample := Item{param1: "hello", param2: uint64(i)}
 		suite.key.Push(&sample)
 		suite.Require().EqualValues(suite.key.Len(), i+1)
 		suite.Require().False(suite.key.IsEmpty())

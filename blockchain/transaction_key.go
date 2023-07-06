@@ -2,7 +2,7 @@ package blockchain
 
 import "fmt"
 
-// Transaction Identifier in the blockchain
+// TransactionKey is the identifier in the blockchain
 type TransactionKey struct {
 	Id    string `json:"transaction_id"`    // txId column
 	Index uint   `json:"transaction_index"` // txIndex column

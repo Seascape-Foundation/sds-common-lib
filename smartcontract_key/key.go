@@ -1,7 +1,7 @@
 // Package smartcontract_key defines the unique
 // smartcontract id within SeascapeSDS
 //
-// The [smartcontract_key.Key] is composed from a string: network_id + "." + address
+// The [smartcontract_key.Key] is composed of a string: network_id + "." + address
 package smartcontract_key
 
 import (
@@ -11,19 +11,19 @@ import (
 	"github.com/Seascape-Foundation/sds-common-lib/data_type/key_value"
 )
 
-// Key of smartcontract composed from network id + "." + address.
+// Key of smartcontract composed of network id + "." + address.
 // Any smartcontract should have one unique key.
 type Key struct {
 	NetworkId string `json:"network_id"`
 	Address   string `json:"address"`
 }
 
-// map(smartcontract_key => topic_string)
+// KeyToTopicString is the equivalent of `map(smartcontract_key => topicString)`
 type KeyToTopicString map[Key]string
 
-// Creates a new smartcontract key
-func New(network_id string, address string) (Key, error) {
-	key := Key{NetworkId: network_id, Address: address}
+// New key from networkId and address
+func New(networkId string, address string) (Key, error) {
+	key := Key{NetworkId: networkId, Address: address}
 	err := key.Validate()
 	if err != nil {
 		return Key{}, fmt.Errorf("key.Validate: %w", err)
@@ -32,10 +32,10 @@ func New(network_id string, address string) (Key, error) {
 	return key, nil
 }
 
-// Creates a new smartcontract key from the map
+// NewFromKeyValue converts the parameters to Key
 func NewFromKeyValue(parameters key_value.KeyValue) (Key, error) {
 	var key Key
-	err := parameters.ToInterface(&key)
+	err := parameters.Interface(&key)
 	if err != nil {
 		return Key{}, fmt.Errorf("failed to convert key-value to interface: %w", err)
 	}
@@ -48,7 +48,7 @@ func NewFromKeyValue(parameters key_value.KeyValue) (Key, error) {
 	return key, nil
 }
 
-// converts the string to Key
+// NewFromString converts the string to Key
 func NewFromString(s string) (Key, error) {
 	str := strings.Split(s, ".")
 	if len(str) != 2 {
@@ -71,15 +71,15 @@ func NewFromString(s string) (Key, error) {
 
 // Returns the key as a string
 // `<network_id>.<address>`
-func (k *Key) ToString() string {
+func (k *Key) String() string {
 	return k.NetworkId + "." + k.Address
 }
 
-func (key *Key) Validate() error {
-	if len(key.NetworkId) == 0 {
+func (k *Key) Validate() error {
+	if len(k.NetworkId) == 0 {
 		return fmt.Errorf("missing network id")
 	}
-	if len(key.Address) == 0 {
+	if len(k.Address) == 0 {
 		return fmt.Errorf("missing address")
 	}
 

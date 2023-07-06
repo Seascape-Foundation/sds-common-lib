@@ -2,7 +2,7 @@
 // The topics are replacing the smartcontract addresses in order to detect the smartcontract
 // that user wants to interact with.
 //
-// For example, if the user wants to interact with Crowns crypto currency
+// For example, if the user wants to interact with Crowns cryptocurrency
 // on Ethereum network, then user will need to know the Crowns ABI interface,
 // as well as the smartcontract address.
 //
@@ -26,10 +26,10 @@ import (
 )
 
 // Filter unlike Topic can omit the parameters
-// Allows to define list of smartcontracts that match the topic filter.
+// Allows to define list of smartcontract that match the topic filter.
 //
-// Which means users can interact with multiple smartcontracts at once.
-type TopicFilter struct {
+// Which means users can interact with multiple smartcontract at once.
+type Filter struct {
 	Organizations  []string `json:"o,omitempty"`
 	Projects       []string `json:"p,omitempty"`
 	NetworkIds     []string `json:"n,omitempty"`
@@ -38,20 +38,8 @@ type TopicFilter struct {
 	Events         []string `json:"e,omitempty"`
 }
 
-// NewFilterTopic from the given parameters
-func NewFilterTopic(o []string, p []string, n []string, g []string, s []string, e []string) TopicFilter {
-	return TopicFilter{
-		Organizations:  o,
-		Projects:       p,
-		NetworkIds:     n,
-		Groups:         g,
-		Smartcontracts: s,
-		Events:         e,
-	}
-}
-
 // convert properties to string
-func reduce_properties(properties []string) string {
+func reduceProperties(properties []string) string {
 	str := ""
 	for i, v := range properties {
 		if i != 0 {
@@ -63,93 +51,92 @@ func reduce_properties(properties []string) string {
 	return str
 }
 
-func (f *TopicFilter) has_nested_level(level uint8) bool {
+func (t *Filter) hasNestedLevel(level uint8) bool {
 	switch level {
-	case ORGANIZATION_LEVEL:
-		if !f.has_nested_level(PROJECT_LEVEL) {
-			return len(f.Organizations) != 0
+	case OrganizationLevel:
+		if !t.hasNestedLevel(ProjectLevel) {
+			return len(t.Organizations) != 0
 		}
 		return true
-	case PROJECT_LEVEL:
-		if !f.has_nested_level(NETWORK_ID_LEVEL) {
-			return len(f.Projects) != 0
+	case ProjectLevel:
+		if !t.hasNestedLevel(NetworkIdLevel) {
+			return len(t.Projects) != 0
 		}
 		return true
-	case NETWORK_ID_LEVEL:
-		if !f.has_nested_level(GROUP_LEVEL) {
-			return len(f.NetworkIds) != 0
+	case NetworkIdLevel:
+		if !t.hasNestedLevel(GroupLevel) {
+			return len(t.NetworkIds) != 0
 		}
 		return true
-	case GROUP_LEVEL:
-		if !f.has_nested_level(SMARTCONTRACT_LEVEL) {
-			return len(f.Groups) != 0
+	case GroupLevel:
+		if !t.hasNestedLevel(SmartcontractLevel) {
+			return len(t.Groups) != 0
 		}
 		return true
-	case SMARTCONTRACT_LEVEL:
-		if !f.has_nested_level(FULL_LEVEL) {
-			return len(f.Smartcontracts) != 0
+	case SmartcontractLevel:
+		if !t.hasNestedLevel(FullLevel) {
+			return len(t.Smartcontracts) != 0
 		}
 		return true
-	case FULL_LEVEL:
-		return len(f.Events) != 0
+	case FullLevel:
+		return len(t.Events) != 0
 	}
 	return false
 }
 
 // Convert the topic filter object to the topic filter string.
-func (t *TopicFilter) ToString() TopicString {
+func (t *Filter) String() String {
 	str := ""
 	if len(t.Organizations) > 0 {
-		str += "o:" + reduce_properties(t.Organizations)
-		if t.has_nested_level(ORGANIZATION_LEVEL) {
+		str += "o:" + reduceProperties(t.Organizations)
+		if t.hasNestedLevel(OrganizationLevel) {
 			str += ";"
 		}
 	}
 	if len(t.Projects) > 0 {
-		str += "p:" + reduce_properties(t.Projects)
-		if t.has_nested_level(PROJECT_LEVEL) {
+		str += "p:" + reduceProperties(t.Projects)
+		if t.hasNestedLevel(ProjectLevel) {
 			str += ";"
 		}
 	}
 	if len(t.NetworkIds) > 0 {
-		str += "n:" + reduce_properties(t.NetworkIds)
-		if t.has_nested_level(NETWORK_ID_LEVEL) {
+		str += "n:" + reduceProperties(t.NetworkIds)
+		if t.hasNestedLevel(NetworkIdLevel) {
 			str += ";"
 		}
 	}
 	if len(t.Groups) > 0 {
-		str += "g:" + reduce_properties(t.Groups)
-		if t.has_nested_level(GROUP_LEVEL) {
+		str += "g:" + reduceProperties(t.Groups)
+		if t.hasNestedLevel(GroupLevel) {
 			str += ";"
 		}
 	}
 	if len(t.Smartcontracts) > 0 {
-		str += "s:" + reduce_properties(t.Smartcontracts)
-		if t.has_nested_level(SMARTCONTRACT_LEVEL) {
+		str += "s:" + reduceProperties(t.Smartcontracts)
+		if t.hasNestedLevel(SmartcontractLevel) {
 			str += ";"
 		}
 	}
 	if len(t.Events) > 0 {
-		str += "e:" + reduce_properties(t.Events)
+		str += "e:" + reduceProperties(t.Events)
 	}
 
-	return TopicString(str)
+	return String(str)
 }
 
-// If the given key value has a "topic_filter" key
-// then the value should be topic filter
-func NewFromKeyValueParameter(parameters key_value.KeyValue) (*TopicFilter, error) {
-	topic_filter_map, err := parameters.GetKeyValue("topic_filter")
+// NewFromKeyValueParameter extracts the "topic_filter" parameter from parameters.
+func NewFromKeyValueParameter(parameters key_value.KeyValue) (*Filter, error) {
+	topicFilterMap, err := parameters.GetKeyValue("topic_filter")
 	if err != nil {
 		return nil, fmt.Errorf("missing `topic_filter` parameter")
 	}
 
-	var topic_filter TopicFilter
-	err = topic_filter_map.ToInterface(&topic_filter)
+	var filter Filter
+	err = topicFilterMap.Interface(&filter)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert the value to TopicFilter: %w", err)
 	}
 
-	return &topic_filter, nil
+	return &filter, nil
 }

@@ -132,62 +132,13 @@ go get github.com/Seascape-Foundation/sds
 
 With the gosds package installed, let's create the `.env` file with the authentication parameters.
 
-> Installation process of gosds and its setup requirements will be added later.
-
-Here is the sample code that tracks all NFT events from `Seascape` organization in all networks.
-
-```go
-package main
-
-import (
-	"fmt"
-	"log"
-
-	"github.com/Seascape-Foundation/sds/service/configuration/env"
-	"github.com/Seascape-Foundation/sds/service/communication/message"
-	"github.com/Seascape-Foundation/sds-common-lib/topic"
-	"github.com/Seascape-Foundation/sds/sdk"
-)
-
-func main() {
-	filter := topic.TopicFilter{
-		Organizations: []string{"seascape"},
-		Groups:        []string{"nft"},
-	}
-
-	subscriber, _ := sdk.NewSubscriber(&filter, true)
-	subscriber.Start()
-
-	for {
-		reply := <-subscriber.Channel
-
-		if reply.Status == message.FAIL {
-			fmt.Fatalf("received an error %s", reply.Message)
-			break
-		}
-
-
-		for _, event := range reply.Parameters.Logs {
-			event_name := event.Name
-			event_parameters := event.Parameters
-
-			fmt.Printf("Event Name: '%s'\n", event_name)
-			fmt.Printf("Parameters: %v\n", event_parameters)
-			fmt.Printf("Network: %s\n", event.SmartcontractKey.NetworkId)
-			fmt.Printf("Timestamp %d\n", event.BlockHeader.Timestamp)
-
-			// Do something with the event logs
-		}
-	}
-}
-
-```
+> Installation process of the module and its setup requirements will be added later.
 
 That's all! No need to know what is the smartcontract address, to keep the ABI interface (If you know what are these terms mean).
 
 SeascapeSDS will care about the network issues, about smartcontract ABI and its address.
 
-#### Now let's discuss about about the code.
+#### Now let's discuss the code.
 
 Very important thing there is the topic `filter` variable.
 In the topic, we listed the smartcontract name: `ScapeNFT`, but we didn't list the network ids (remember that the NFT is deployed on `Ethereum`, `BNB Chain` and `Moonriver`).
@@ -197,12 +148,21 @@ By omitting network ids, Scape NFT on any network will be received by the backen
 If you want for example to track ScapeNFTs on BNB Chain then change the topic filter to:
 
 ```go
-filter := topic.TopicFilter{
-    Organizations:  []string{"seascape"},
-    Projects:       []string{"core"},
-    Smartcontracts: []string{"ScapeNFT"},
-    NetworkIds:     []string{"1"},
-    Methods:        []string{"transfer"},
+package main
+
+import (
+	"github.com/Seascape-Foundation/sds-common-lib/topic"
+)
+
+func main() {
+	filter := topic.TopicFilter{
+		Organizations:  []string{"seascape"},
+		Projects:       []string{"core"},
+		Smartcontracts: []string{"ScapeNFT"},
+		NetworkIds:     []string{"1"},
+		Methods:        []string{"transfer"},
+	}
+	println(filter)
 }
 ```
 
@@ -212,7 +172,7 @@ filter := topic.TopicFilter{
 Once we got the transactions, what about the parameters of the transactions? In the example above we listed three arguments as:
 
 ```go
-nft_id := tx.Args["_nftId"]
+nftId := tx.Args["_nftId"]
 from := tx.Args["_from"]
 to := tx.Args["_to"]
 ```
@@ -286,7 +246,7 @@ For password type `tiger`.
 In the Mysql create the SDS database:
 
 ```sql
-CREATE DATABASE sds_dev `
+CREATE DATABASE sds_dev
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 ```
 
@@ -358,13 +318,6 @@ go build -o ./bin/sds.exe
 Either set the Security or Install SDS Gateway. Or setup the [configurations](#sds-configuration).
 
 ---
-# Security
-
-## Vault
-For setting up the Vault, visit the page:
-[Vault setup](./VAULT.md).
-
----
 
 # SeascapeSDS Core
 This go module contains the core features
@@ -372,7 +325,7 @@ and SDK along together.
 
 This repository isn't enough to run the SeascapeSDS in your machine. 
 
-The following set ups are necessary for running on your machine:
+The following set-ups are necessary for running on your machine:
 
 * [Vault](https://vaultproject.io/) for keeping credentials
 * [Mysql Database](https://mysql.com/) 
@@ -383,17 +336,17 @@ The following set ups are necessary for running on your machine:
 
 We can set the following environment variables
 
-| Name                                | Default | Description |
-|-------------------------------------|---------|-------------|
-| `SDS_BLOCKCHAIN_NETWORKS` |         | See [Network](#network) section |
-| `CORE_PORT` | *4001* | The SDS is available for SDS Gateway on this port |
-| `SDS_DATABASE_NAME` | *seascape_sds* | The database name |
-| `SDS_DATABASE_PORT` | *3306* | The database port |
-| `SDS_DATABASE_HOST` | *localhost* | The database host |
-| `SDS_DATABASE_TIMEOUT` | *10* | The request timeout seconds. If database doesn't responde within the timeout, then SDS will terminate or return an error |
-| `SDS_REQUEST_TIMEOUT` | *30* | The request timeout in Seconds. Any request from one thread or process to another (whether its internal or remote) handles `SDS_REQUEST_TIMEOUT` seconds. If the remote service doesn't respond within the timeout, then SDS will reconnect. **It goes along with with `SDS_REQUEST_ATTEMPT`** |
-| `SDS_REQUEST_ATTEMPT` | *5* | Amount of reconnects that SDS is trying to do. If the remote thread or process doesn't respond within `SDS_REQUEST_TIMEOUT` seconds, then SDS will make `SDS_REQUEST_ATTEMPT` attempts. If the remote thread or process doesn't responde with all attempts, then SDS will return an error. |
-| `SDS_IMX_REQUEST_PER_SECOND` | *20* | How many requests SDS can do to the remote Imx provider. This parameter sets the limit that is managed by SDS. The more smartcontracts are registered on `imx` network, the slower the fetch speed. |
+| Name                               |  Default       | Description                                                                                                                                                                                                                                                                                    |
+|------------------------------------|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `SDS_BLOCKCHAIN_NETWORKS`          |                | See [Network](#network) section                                                                                                                                                                                                                                                                |
+| `CORE_PORT`                        | *4001*         | The SDS is available for SDS Gateway on this port                                                                                                                                                                                                                                              |
+| `SDS_DATABASE_NAME`                | *seascape_sds* | The database name                                                                                                                                                                                                                                                                              |
+| `SDS_DATABASE_PORT`                | *3306*         | The database port                                                                                                                                                                                                                                                                              |
+| `SDS_DATABASE_HOST`                | *localhost*    | The database host                                                                                                                                                                                                                                                                              |
+| `SDS_DATABASE_TIMEOUT`             | *10*           | The request timeout seconds. If database doesn't responde within the timeout, then SDS will terminate or return an error                                                                                                                                                                       |
+| `SDS_REQUEST_TIMEOUT`              | *30*           | The request timeout in Seconds. Any request from one thread or process to another (whether its internal or remote) handles `SDS_REQUEST_TIMEOUT` seconds. If the remote service doesn't respond within the timeout, then SDS will reconnect. **It goes along with with `SDS_REQUEST_ATTEMPT`** |
+| `SDS_REQUEST_ATTEMPT`              | *5*            | Amount of reconnects that SDS is trying to do. If the remote thread or process doesn't respond within `SDS_REQUEST_TIMEOUT` seconds, then SDS will make `SDS_REQUEST_ATTEMPT` attempts. If the remote thread or process doesn't responde with all attempts, then SDS will return an error.     |
+| `SDS_IMX_REQUEST_PER_SECOND`       | *20*           | How many requests SDS can do to the remote Imx provider. This parameter sets the limit that is managed by SDS. The more smartcontracts are registered on `imx` network, the slower the fetch speed.                                                                                            |
 
 
 ## Network
