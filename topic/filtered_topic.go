@@ -12,7 +12,7 @@
 //		topic := topic.Topic{
 //			Organization: "seascape",
 //	     	NetworkId: "1",
-//	     	Smartcontract: "Crowns"
+//	     	Name: "Crowns"
 //		}
 //
 // For example, use the topic in SDK to read the data from indexer.
@@ -35,7 +35,6 @@ type Filter struct {
 	NetworkIds     []string `json:"n,omitempty"`
 	Groups         []string `json:"g,omitempty"`
 	Smartcontracts []string `json:"s,omitempty"`
-	Events         []string `json:"e,omitempty"`
 }
 
 // convert properties to string
@@ -74,18 +73,13 @@ func (t *Filter) hasNestedLevel(level uint8) bool {
 		}
 		return true
 	case SmartcontractLevel:
-		if !t.hasNestedLevel(FullLevel) {
-			return len(t.Smartcontracts) != 0
-		}
-		return true
-	case FullLevel:
-		return len(t.Events) != 0
+		return len(t.Smartcontracts) != 0
 	}
 	return false
 }
 
 // Convert the topic filter object to the topic filter string.
-func (t *Filter) String() String {
+func (t *Filter) String() Id {
 	str := ""
 	if len(t.Organizations) > 0 {
 		str += "o:" + reduceProperties(t.Organizations)
@@ -117,11 +111,8 @@ func (t *Filter) String() String {
 			str += ";"
 		}
 	}
-	if len(t.Events) > 0 {
-		str += "e:" + reduceProperties(t.Events)
-	}
 
-	return String(str)
+	return Id(str)
 }
 
 // NewFromKeyValueParameter extracts the "topic_filter" parameter from parameters.

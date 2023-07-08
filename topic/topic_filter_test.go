@@ -21,7 +21,7 @@ import (
 type TestTopicFilterSuite struct {
 	suite.Suite
 	topic       *Filter
-	topicString String
+	topicString Id
 }
 
 // SetupTest
@@ -113,7 +113,7 @@ func (suite *TestTopicFilterSuite) TestToString() {
 		Events:         []string{"Transfer"},
 	}
 	topicString = expected.String()
-	expectedTopicString := String(`o:seascape;p:sds-core;n:1,56,imx;g:test-suite;s:TestErc20;e:Transfer`)
+	expectedTopicString := Id(`o:seascape;p:sds-core;n:1,56,imx;g:test-suite;s:TestErc20;e:Transfer`)
 	suite.Require().EqualValues(expectedTopicString, topicString)
 
 	// some parameters are missing

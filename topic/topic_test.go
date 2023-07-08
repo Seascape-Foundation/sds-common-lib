@@ -21,7 +21,7 @@ import (
 type TestTopicSuite struct {
 	suite.Suite
 	topic       Topic
-	topicString String
+	topicString Id
 }
 
 // SetupTests
@@ -29,39 +29,39 @@ type TestTopicSuite struct {
 // Setup checks ToMap() functions
 func (suite *TestTopicSuite) SetupTest() {
 	sample := Topic{
-		Organization:  "seascape",
-		Project:       "sds-core",
-		NetworkId:     "1",
-		Group:         "test-suite",
-		Smartcontract: "TestErc20",
-		Event:         "Transfer",
+		Organization: "seascape",
+		Project:      "sds-core",
+		NetworkId:    "1",
+		Group:        "test-suite",
+		Name:         "TestErc20",
+		Event:        "Transfer",
 	}
 	topicString := AsTopicString(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
 
 	suite.topic = sample
 	suite.topicString = topicString
 
-	suite.Require().Equal(topicString, sample.String(FullLevel))
+	suite.Require().Equal(topicString, sample.Id(FullLevel))
 }
 
 func (suite *TestTopicSuite) TestStringParse() {
-	newTopic, err := ParseString(suite.topicString)
+	newTopic, err := Unmarshal(suite.topicString)
 	suite.Require().NoError(err)
 	suite.Require().EqualValues(suite.topic, newTopic)
 
 	// additional parameter in the topic string should fail
 	topicString := AsTopicString(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer;m:transfer`)
-	_, err = ParseString(topicString)
+	_, err = Unmarshal(topicString)
 	suite.Require().Error(err)
 
 	// case sensitive
 	topicString = AsTopicString(`O:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
-	_, err = ParseString(topicString)
+	_, err = Unmarshal(topicString)
 	suite.Require().Error(err)
 
 	// additional semicolon should fail
 	topicString = AsTopicString(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer;`)
-	_, err = ParseString(topicString)
+	_, err = Unmarshal(topicString)
 	suite.Require().Error(err)
 
 	// missing the one of the paths
@@ -69,13 +69,13 @@ func (suite *TestTopicSuite) TestStringParse() {
 	// should be given too.
 	// missing "network_id"
 	topicString = AsTopicString(`o:seascape;p:sds-core;g:test-suite;s:TestErc20;e:Transfer`)
-	_, err = ParseString(topicString)
+	_, err = Unmarshal(topicString)
 	suite.Require().Error(err)
 
 	// value of the topic path is not a literal
 	// it has not required tokens.
 	topicString = AsTopicString(`o:seascape:network;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
-	_, err = ParseString(topicString)
+	_, err = Unmarshal(topicString)
 	suite.Require().Error(err)
 }
 
@@ -151,84 +151,84 @@ func (suite *TestTopicSuite) TestParsingJson() {
 
 func (suite *TestTopicSuite) TestToString() {
 	topic := Topic{
-		Organization:  "seascape",
-		Project:       "sds-core",
-		NetworkId:     "1",
-		Group:         "test-suite",
-		Smartcontract: "TestErc20",
-		Event:         "Transfer",
+		Organization: "seascape",
+		Project:      "sds-core",
+		NetworkId:    "1",
+		Group:        "test-suite",
+		Name:         "TestErc20",
+		Event:        "Transfer",
 	}
 
-	topicString := topic.String(0)
+	topicString := topic.Id(0)
 	suite.Require().Empty(topicString)
 
-	topicString = topic.String(7)
+	topicString = topic.Id(7)
 	suite.Require().Empty(topicString)
 
-	expectedTopicString := String(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
-	topicString = topic.String(6)
+	expectedTopicString := Id(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
+	topicString = topic.Id(6)
 	suite.Require().EqualValues(expectedTopicString, topicString)
 
 	expectedTopicString = `o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20`
-	topicString = topic.String(5)
+	topicString = topic.Id(5)
 	suite.Require().EqualValues(expectedTopicString, topicString)
 
 	expectedTopicString = `o:seascape;p:sds-core;n:1;g:test-suite`
-	topicString = topic.String(4)
+	topicString = topic.Id(4)
 	suite.Require().EqualValues(expectedTopicString, topicString)
 
 	expectedTopicString = `o:seascape;p:sds-core;n:1`
-	topicString = topic.String(3)
+	topicString = topic.Id(3)
 	suite.Require().EqualValues(expectedTopicString, topicString)
 
 	expectedTopicString = `o:seascape;p:sds-core`
-	topicString = topic.String(2)
+	topicString = topic.Id(2)
 	suite.Require().EqualValues(expectedTopicString, topicString)
 
 	expectedTopicString = `o:seascape`
-	topicString = topic.String(1)
+	topicString = topic.Id(1)
 	suite.Require().EqualValues(expectedTopicString, topicString)
 
 	expectedTopicString = `o:seascape`
 	suite.Require().EqualValues(expectedTopicString, topicString)
 
 	topic = Topic{
-		Organization:  "seascape",
-		Project:       "sds-core",
-		NetworkId:     "",
-		Group:         "test-suite",
-		Smartcontract: "TestErc20",
-		Event:         "Transfer",
+		Organization: "seascape",
+		Project:      "sds-core",
+		NetworkId:    "",
+		Group:        "test-suite",
+		Name:         "TestErc20",
+		Event:        "Transfer",
 	}
-	topicString = topic.String(FullLevel)
+	topicString = topic.Id(FullLevel)
 	suite.Require().Empty(topicString)
 
 	// NetworkId is empty, the upper root exists
 	// But all topic should be valid
-	topicString = topic.String(ProjectLevel)
+	topicString = topic.Id(ProjectLevel)
 	suite.Require().Empty(topicString)
 
 	topic = Topic{
-		Organization:  "seascape",
-		Project:       "sds-core",
-		Group:         "test-suite",
-		Smartcontract: "TestErc20",
-		Event:         "Transfer",
+		Organization: "seascape",
+		Project:      "sds-core",
+		Group:        "test-suite",
+		Name:         "TestErc20",
+		Event:        "Transfer",
 	}
-	topicString = topic.String(FullLevel)
+	topicString = topic.Id(FullLevel)
 	suite.Require().Empty(topicString)
 
 	topic = Topic{
-		Organization:  "seascape",
-		Project:       "sds-core",
-		NetworkId:     "1",
-		Group:         "test-suite",
-		Smartcontract: "TestErc20",
+		Organization: "seascape",
+		Project:      "sds-core",
+		NetworkId:    "1",
+		Group:        "test-suite",
+		Name:         "TestErc20",
 	}
 	// the topic is FullLevel,
 	// but we try to get full path
 	// it should fail
-	topicString = topic.String(FullLevel)
+	topicString = topic.Id(FullLevel)
 	suite.Require().Empty(topicString)
 
 }
