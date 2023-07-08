@@ -17,7 +17,7 @@ type Crud interface {
 	// Insert into the database. It calls INSERT command
 	Insert(interface{}) error
 	// Select selects the single row from the database. It calls SELECT_ROW command
-	Select(interface{}, interface{}) error
+	Select(interface{}) error
 
 	// SelectAll selects the multiple rows from the database. It calls SELECT_ALL without WHERE clause of query.
 	//
