@@ -22,6 +22,8 @@ type (
 	}
 )
 
+var allPaths = []string{"org", "proj", "net", "group", "name"}
+
 // Id from the topic to the TopicString
 // If one of the parameters is missing,
 // then it will return an empty string
@@ -116,6 +118,39 @@ func (t *Topic) setPath(path string, val string) {
 	case "name":
 		t.Name = val
 	}
+}
+
+func (t *Topic) getValue(path string) string {
+	switch path {
+	case "org":
+		return t.Organization
+	case "proj":
+		return t.Project
+	case "net":
+		return t.NetworkId
+	case "group":
+		return t.Group
+	case "name":
+		return t.Name
+	}
+	return ""
+}
+
+// Has the given paths or not. If not, then
+// return an error.
+//
+// If the paths argument has a unsupported path name, then that will be skipped
+func (t *Topic) Has(paths ...string) bool {
+	for _, path := range paths {
+		if !isPathName(path) {
+			return false
+		}
+		if len(t.getValue(path)) == 0 {
+			return false
+		}
+	}
+
+	return true
 }
 
 // ValidateMissingLevel The topic paths are in the order.
@@ -226,13 +261,33 @@ func (id Id) Only(paths ...string) Id {
 		return id
 	}
 
-	for _, path := range paths {
-		if isPathName(path) {
+	for _, path := range allPaths {
+		keep := false
+		for _, pathToKeep := range paths {
+			if path == pathToKeep {
+				keep = true
+				break
+			}
+		}
+
+		if !keep {
 			topic.setPath(path, "")
 		}
 	}
 
 	return topic.Id()
+}
+
+// Has the given paths or not. If not, then
+// return an error.
+//
+// If the paths argument has a unsupported path name, then that will be skipped
+func (id Id) Has(paths ...string) bool {
+	topic, err := id.Unmarshal()
+	if err != nil {
+		return false
+	}
+	return topic.Has(paths...)
 }
 
 const OrganizationLevel uint8 = 1  // only organization.
