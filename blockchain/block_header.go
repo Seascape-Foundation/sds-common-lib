@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Seascape-Foundation/sds-common-lib/data_type/key_value"
+	"github.com/ahmetson/common-lib/data_type/key_value"
 )
 
 type Number uint64

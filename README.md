@@ -151,7 +151,7 @@ If you want for example to track ScapeNFTs on BNB Chain then change the topic fi
 package main
 
 import (
-	"github.com/Seascape-Foundation/sds-common-lib/topic"
+	"github.com/ahmetson/common-lib/topic"
 )
 
 func main() {

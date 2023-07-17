@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/Seascape-Foundation/sds-common-lib/data_type"
+	"github.com/ahmetson/common-lib/data_type"
 )
 
 type List struct {

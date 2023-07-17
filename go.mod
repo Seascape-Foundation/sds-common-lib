@@ -1,4 +1,4 @@
-module github.com/Seascape-Foundation/sds-common-lib
+module github.com/ahmetson/common-lib
 
 go 1.19
 

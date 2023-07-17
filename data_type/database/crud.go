@@ -1,13 +1,13 @@
 package database
 
 import (
-	"github.com/Seascape-Foundation/sds-common-lib/data_type/key_value"
+	"github.com/ahmetson/common-lib/data_type/key_value"
 )
 
 // Crud interface adds the database CRUD operations to the data struct.
 //
 // The interface that it accepts is the *remote.ClientSocket from the
-// "github.com/Seascape-Foundation/sds-service-lib/remote" package.
+// "github.com/ahmetson/service-lib/remote" package.
 type Crud interface {
 	// Update the parameters by int flag. It calls UPDATE command
 	Update(interface{}, uint8) error
