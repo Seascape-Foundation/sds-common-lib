@@ -34,9 +34,8 @@ func (suite *TestTopicFilterSuite) SetupTest() {
 		NetworkIds:     []string{"1", "56", "imx"},
 		Groups:         []string{"test-suite"},
 		Smartcontracts: []string{"TestErc20"},
-		Events:         []string{"Transfer"},
 	}
-	topicString := AsTopicString(`o:seascape;p:sds-core;n:1,56,imx;g:test-suite;s:TestErc20;e:Transfer`)
+	topicString := Id(`o:seascape;p:sds-core;n:1,56,imx;g:test-suite;s:TestErc20;e:Transfer`)
 
 	suite.topic = &sample
 	suite.topicString = topicString
@@ -77,7 +76,6 @@ func (suite *TestTopicFilterSuite) TestKvParameterParsing() {
 		NetworkIds:     []string{"1", "56", "imx"},
 		Groups:         []string{"test-suite"},
 		Smartcontracts: []string{"TestErc20"},
-		Events:         []string{"Transfer"},
 	}
 	kv.Set("topic_filter", expected)
 	_, err = NewFromKeyValueParameter(kv)
@@ -110,7 +108,6 @@ func (suite *TestTopicFilterSuite) TestToString() {
 		NetworkIds:     []string{"1", "56", "imx"},
 		Groups:         []string{"test-suite"},
 		Smartcontracts: []string{"TestErc20"},
-		Events:         []string{"Transfer"},
 	}
 	topicString = expected.String()
 	expectedTopicString := Id(`o:seascape;p:sds-core;n:1,56,imx;g:test-suite;s:TestErc20;e:Transfer`)
@@ -122,7 +119,6 @@ func (suite *TestTopicFilterSuite) TestToString() {
 		Projects:       []string{"sds-core"},
 		Groups:         []string{"test-suite"},
 		Smartcontracts: []string{"TestErc20"},
-		Events:         []string{"Transfer"},
 	}
 	topicString = expected.String()
 	expectedTopicString = `o:seascape;p:sds-core;g:test-suite;s:TestErc20;e:Transfer`
