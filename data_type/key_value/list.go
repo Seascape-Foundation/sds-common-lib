@@ -137,3 +137,16 @@ func (q *List) Get(key interface{}) (interface{}, error) {
 	}
 	return value, nil
 }
+
+// Take is identical as Get, but removes the returned element from the list
+func (q *List) Take(key interface{}) (interface{}, error) {
+	value, err := q.Get(key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get the element")
+	}
+
+	delete(q.l, key)
+	q.length--
+
+	return value, nil
+}
