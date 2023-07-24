@@ -184,6 +184,23 @@ func (k KeyValue) Map() map[string]interface{} {
 	return k
 }
 
+// MapString returns the map with the string values only
+func (k KeyValue) MapString() map[string]string {
+	converted := k.Map()
+
+	data := map[string]string{}
+
+	for key := range converted {
+		value, err := k.GetString(key)
+		if err != nil {
+			continue
+		}
+		data[key] = value
+	}
+
+	return data
+}
+
 // Bytes serializes k into the series of bytes
 func (k KeyValue) Bytes() ([]byte, error) {
 	err := k.noNilValue()
