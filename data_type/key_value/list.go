@@ -9,16 +9,17 @@ import (
 
 type List struct {
 	l         map[interface{}]interface{}
-	length    int
+	length    uint
+	cap       uint
 	keyType   reflect.Type
 	valueType reflect.Type
 }
 
-// ListLength max amount of data that this list could keep
-const ListLength = 1_000_000
+// DefaultCap max amount of data that this list could keep
+const DefaultCap uint = 1_000_000
 
 // NewList returns a new list of the elements that could contain
-// maximum LIST_LENGTH amount of elements.
+// maximum DefaultCap of elements.
 //
 // The queue has a function that returns the first element
 // by taking it out from the list.
@@ -28,12 +29,13 @@ func NewList() *List {
 	return &List{
 		keyType:   nil,
 		valueType: nil,
+		cap:       DefaultCap,
 		length:    0,
 		l:         map[interface{}]interface{}{},
 	}
 }
 
-func (q *List) Len() int {
+func (q *List) Len() uint {
 	return q.length
 }
 
@@ -42,11 +44,28 @@ func (q *List) IsEmpty() bool {
 }
 
 func (q *List) IsFull() bool {
-	return q.length == ListLength
+	return q.length == q.cap
 }
 
 func (q *List) List() map[interface{}]interface{} {
 	return q.l
+}
+
+// SetCap updates the capacity of the list.
+// If the list has more elements than newCap, it throws an error.
+func (q *List) SetCap(newCap uint) error {
+	if q.length > newCap {
+		return fmt.Errorf("list has %d elements. can not set cap to %d", q.length, newCap)
+	}
+
+	q.cap = newCap
+
+	return nil
+}
+
+// Cap returns the capacity of the list
+func (q *List) Cap() uint {
+	return q.cap
 }
 
 // Add a new element to the queue.
@@ -114,7 +133,7 @@ func (q *List) Exist(key interface{}) bool {
 }
 
 // Get the element in the list to the value.
-// The value should be passed by pointer
+// Pointer should pass the value
 func (q *List) Get(key interface{}) (interface{}, error) {
 	if data_type.IsNil(key) {
 		return nil, fmt.Errorf("the parameter is nil")
@@ -138,7 +157,17 @@ func (q *List) Get(key interface{}) (interface{}, error) {
 	return value, nil
 }
 
-// Take is identical as Get, but removes the returned element from the list
+// GetFirst returns the first added element.
+// Returns the key, value and error if it can not find it.
+func (q *List) GetFirst() (interface{}, interface{}, error) {
+	for key, value := range q.l {
+		return key, value, nil
+	}
+
+	return nil, nil, fmt.Errorf("empty list")
+}
+
+// Take is a Get, but removes the returned element from the list
 func (q *List) Take(key interface{}) (interface{}, error) {
 	value, err := q.Get(key)
 	if err != nil {
@@ -149,4 +178,17 @@ func (q *List) Take(key interface{}) (interface{}, error) {
 	q.length--
 
 	return value, nil
+}
+
+// TakeFirst is a GetFirst, but removes the element from the list
+func (q *List) TakeFirst() (interface{}, interface{}, error) {
+	key, value, err := q.GetFirst()
+	if err != nil {
+		return nil, nil, fmt.Errorf("list.GetFirst: %w", err)
+	}
+
+	delete(q.l, key)
+	q.length--
+
+	return key, value, nil
 }

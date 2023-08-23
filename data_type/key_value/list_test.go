@@ -96,16 +96,16 @@ func (suite *TestListQueue) TestListLimit() {
 	newList := NewList()
 
 	// index till QUEUE_LENGTH - 2
-	for i := 0; i < ListLength; i++ {
+	for i := 0; i < DefaultCap; i++ {
 		err := newList.Add(i, i*2)
 		suite.Require().NoError(err)
 	}
 
 	suite.Require().True(newList.IsFull())
-	suite.Require().Equal(newList.Len(), ListLength)
+	suite.Require().Equal(newList.Len(), DefaultCap)
 
 	// can not add when the new list is full
-	err := newList.Add(ListLength, ListLength*2)
+	err := newList.Add(DefaultCap, DefaultCap*2)
 	suite.Require().Error(err)
 }
 
