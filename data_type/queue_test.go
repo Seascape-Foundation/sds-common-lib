@@ -61,7 +61,7 @@ func (suite *TestQueueSuite) TestPushPull() {
 		suite.Require().False(suite.key.IsEmpty())
 	}
 
-	// add the last element so the length should be equal to QUEUE_LENGTH
+	// add the last element so the cap should be equal to QUEUE_LENGTH
 	sample = Item{param1: "hello", param2: uint64(0)}
 	suite.key.Push(&sample)
 	suite.Require().EqualValues(suite.key.Len(), 10)
