@@ -96,7 +96,7 @@ func (suite *TestListQueue) TestListLimit() {
 	newList := NewList()
 
 	// index till QUEUE_LENGTH - 2
-	for i := 0; i < DefaultCap; i++ {
+	for i := uint(0); i < DefaultCap; i++ {
 		err := newList.Add(i, i*2)
 		suite.Require().NoError(err)
 	}

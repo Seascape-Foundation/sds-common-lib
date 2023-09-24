@@ -34,7 +34,6 @@ func (suite *TestTopicSuite) SetupTest() {
 		NetworkId:    "1",
 		Group:        "test-suite",
 		Name:         "TestErc20",
-		Event:        "Transfer",
 	}
 	topicString := AsTopicString(`o:seascape;p:sds-core;n:1;g:test-suite;s:TestErc20;e:Transfer`)
 

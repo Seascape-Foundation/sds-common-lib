@@ -24,7 +24,7 @@ type (
 
 var allPaths = []string{"org", "proj", "net", "group", "name"}
 
-// Id from the topic to the TopicString
+// Id from the topic to the Id,
 // If one of the parameters is missing,
 // then it will return an empty string
 //
@@ -57,7 +57,7 @@ func (t *Topic) Id() Id {
 
 // Level Calculates the level
 // From the bottom level to up.
-// If it's an empty, then it returns 0
+// If it's empty, then it returns 0
 func (t *Topic) Level() uint8 {
 	if len(t.Name) > 0 {
 		return SmartcontractLevel
@@ -139,7 +139,7 @@ func (t *Topic) getValue(path string) string {
 // Has the given paths or not. If not, then
 // return an error.
 //
-// If the paths argument has a unsupported path name, then that will be skipped
+// If the path argument has an unsupported path name, then that will be skipped
 func (t *Topic) Has(paths ...string) bool {
 	for _, path := range paths {
 		if !isPathName(path) {
@@ -195,7 +195,7 @@ func (t *Topic) ValidateMissingLevel(level uint8) error {
 // The topic parameters should be defined as literals in popular programming languages.
 // Finally, the path of topic if it's converted to the TopicString should be valid as well.
 //
-// That means, if user wants to create a topic to access t.Project, then it's upper parent
+// That means, if a user wants to create a topic to access t.Project, then its upper parent
 // the t.Organization should be defined as well.
 // But other topic parameters could be left as empty.
 func (t *Topic) Validate() error {
@@ -281,7 +281,7 @@ func (id Id) Only(paths ...string) Id {
 // Has the given paths or not. If not, then
 // return an error.
 //
-// If the paths argument has a unsupported path name, then that will be skipped
+// If the path argument has an unsupported path name, then that will be skipped
 func (id Id) Has(paths ...string) bool {
 	topic, err := id.Unmarshal()
 	if err != nil {
