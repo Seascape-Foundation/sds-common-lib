@@ -78,10 +78,10 @@ func (q *List) Add(key interface{}, value interface{}) error {
 		return fmt.Errorf("list is already full")
 	}
 	if data_type.IsNil(key) {
-		return fmt.Errorf("the key parameter is nil")
+		return fmt.Errorf("the kv parameter is nil")
 	}
 	if data_type.IsPointer(key) {
-		return fmt.Errorf("the key was passed by the pointer")
+		return fmt.Errorf("the kv was passed by the pointer")
 	}
 	if data_type.IsNil(value) {
 		return fmt.Errorf("the value parameer is nil")
@@ -104,7 +104,7 @@ func (q *List) Add(key interface{}, value interface{}) error {
 	}
 
 	return fmt.Errorf(
-		"expected key type %T against %T and expected value type %T against %T",
+		"expected kv type %T against %T and expected value type %T against %T",
 		q.keyType,
 		keyType,
 		q.valueType,
@@ -139,7 +139,7 @@ func (q *List) Get(key interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("the parameter is nil")
 	}
 	if data_type.IsPointer(key) {
-		return nil, fmt.Errorf("the key was passed by the pointer")
+		return nil, fmt.Errorf("the kv was passed by the pointer")
 	}
 	if q.IsEmpty() {
 		return nil, fmt.Errorf("the list is empty")
@@ -147,7 +147,7 @@ func (q *List) Get(key interface{}) (interface{}, error) {
 
 	keyType := reflect.TypeOf(key)
 	if keyType != q.keyType {
-		return nil, fmt.Errorf("the data mismatch: expected key type %T against %T", q.keyType, keyType)
+		return nil, fmt.Errorf("the data mismatch: expected kv type %T against %T", q.keyType, keyType)
 	}
 
 	value, ok := q.l[key]
@@ -158,7 +158,7 @@ func (q *List) Get(key interface{}) (interface{}, error) {
 }
 
 // GetFirst returns the first added element.
-// Returns the key, value and error if it can not find it.
+// Returns the kv, value and error if it can not find it.
 func (q *List) GetFirst() (interface{}, interface{}, error) {
 	for key, value := range q.l {
 		return key, value, nil

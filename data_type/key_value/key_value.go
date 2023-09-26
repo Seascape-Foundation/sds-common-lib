@@ -1,11 +1,11 @@
 // Package key_value defines the custom map and its additional functions.
 //
 // The package defines two different data types:
-//   - [KeyValue] is the map where the key is a string, and value could be anything.
-//     It defines additional functions that returns the value converted to the desired type.
+//   - [KeyValue] is the map where the kv is a string, and the value could be anything.
+//     It defines additional functions that return the value converted to the desired type.
 //   - [List] is the list of elements but based on the map.
-//     For the user the list acts as the array.
-//     However internal it uses map for optimization.
+//     For the user, the list acts as the array.
+//     However, internally it uses a map for optimization.
 package key_value
 
 import (
@@ -16,19 +16,18 @@ import (
 	"strings"
 
 	"github.com/ahmetson/common-lib/data_type"
-	"github.com/ethereum/go-ethereum/common/math"
 )
 
 // KeyValue is the golang's map with the functions.
 // Important to know that, no value could be `nil`.
 type KeyValue map[string]interface{}
 
-// New KeyValue from golang's map.
-func New(keyValue map[string]interface{}) KeyValue {
-	return keyValue
+// New empty KeyValue is created
+func New() KeyValue {
+	return map[string]interface{}{}
 }
 
-// NewFromString converts the s string with a json decoder into the key value
+// NewFromString converts the s string with a json decoder into the kv value
 func NewFromString(s string) (KeyValue, error) {
 	var keyValue KeyValue
 
@@ -36,12 +35,12 @@ func NewFromString(s string) (KeyValue, error) {
 	decoder.UseNumber()
 
 	if err := decoder.Decode(&keyValue); err != nil {
-		return Empty(), fmt.Errorf("json.decoder: '%w'", err)
+		return nil, fmt.Errorf("json.decoder: '%w'", err)
 	}
 
 	err := keyValue.noNilValue()
 	if err != nil {
-		return Empty(), fmt.Errorf("value is nil: %w", err)
+		return nil, fmt.Errorf("value is nil: %w", err)
 	}
 
 	return keyValue, nil
@@ -55,31 +54,26 @@ func NewFromInterface(i interface{}) (KeyValue, error) {
 	var k KeyValue
 	bytes, err := json.Marshal(i)
 	if err != nil {
-		return Empty(), fmt.Errorf("json.marshal %T: '%w'", i, err)
+		return nil, fmt.Errorf("json.marshal %T: '%w'", i, err)
 	}
 	err = json.Unmarshal(bytes, &k)
 	if err != nil {
-		return Empty(), fmt.Errorf("json:unmarshal %s: '%w'", bytes, err)
+		return nil, fmt.Errorf("json:unmarshal %s: '%w'", bytes, err)
 	}
 
 	nilErr := k.noNilValue()
 	if nilErr != nil {
-		return Empty(), fmt.Errorf("value is nil: %w", nilErr)
+		return nil, fmt.Errorf("value is nil: %w", nilErr)
 	}
 
 	return k, nil
-}
-
-// Empty KeyValue is created
-func Empty() KeyValue {
-	return map[string]interface{}{}
 }
 
 // Checks that the values are not nil.
 func (k KeyValue) noNilValue() error {
 	for key, value := range k {
 		if value == nil {
-			return fmt.Errorf("key %s is nil", key)
+			return fmt.Errorf("kv %s is nil", key)
 		}
 
 		nestedKv, ok := value.(KeyValue)
@@ -87,7 +81,7 @@ func (k KeyValue) noNilValue() error {
 		if ok {
 			err := nestedKv.noNilValue()
 			if err != nil {
-				return fmt.Errorf("key %s nested value nil: %w", key, err)
+				return fmt.Errorf("kv %s nested value nil: %w", key, err)
 			}
 
 			continue
@@ -96,11 +90,11 @@ func (k KeyValue) noNilValue() error {
 		nestedMap, ok := value.(map[string]interface{})
 
 		if ok {
-			nestedKv = New(nestedMap)
+			nestedKv = nestedMap
 
 			err := nestedKv.noNilValue()
 			if err != nil {
-				return fmt.Errorf("key %s nested value nil: %w", key, err)
+				return fmt.Errorf("kv %s nested value nil: %w", key, err)
 			}
 		}
 	}
@@ -116,7 +110,7 @@ func (k KeyValue) setNumber() {
 			continue
 		}
 
-		// even if it's a number wrapped as a string
+		// even if it's a number wrapped as a string,
 		// we won't convert it.
 		_, ok := value.(string)
 		if ok {
@@ -128,7 +122,7 @@ func (k KeyValue) setNumber() {
 			continue
 		}
 
-		bigNum, err := k.GetBigNumber(key)
+		bigNum, err := k.BigIntValue(key)
 		if err == nil {
 			delete(k, key)
 
@@ -137,7 +131,7 @@ func (k KeyValue) setNumber() {
 			continue
 		}
 
-		floatNum, err := k.GetFloat64(key)
+		floatNum, err := k.Float64Value(key)
 		if err == nil {
 			delete(k, key)
 
@@ -146,7 +140,7 @@ func (k KeyValue) setNumber() {
 			continue
 		}
 
-		num, err := k.GetUint64(key)
+		num, err := k.Uint64Value(key)
 		if err == nil {
 			delete(k, key)
 
@@ -167,7 +161,7 @@ func (k KeyValue) setNumber() {
 		nestedMap, ok := value.(map[string]interface{})
 
 		if ok {
-			nestedKv = New(nestedMap)
+			nestedKv = nestedMap
 			// ToMap will call setNumber()
 			nestedMap = nestedKv.Map()
 
@@ -191,7 +185,7 @@ func (k KeyValue) MapString() map[string]string {
 	data := map[string]string{}
 
 	for key := range converted {
-		value, err := k.GetString(key)
+		value, err := k.StringValue(key)
 		if err != nil {
 			continue
 		}
@@ -201,7 +195,7 @@ func (k KeyValue) MapString() map[string]string {
 	return data
 }
 
-// Bytes serializes k into the series of bytes
+// Bytes serialize k into the series of bytes
 func (k KeyValue) Bytes() ([]byte, error) {
 	err := k.noNilValue()
 	if err != nil {
@@ -217,14 +211,14 @@ func (k KeyValue) Bytes() ([]byte, error) {
 	return bytes, nil
 }
 
-// Returns the serialized key-value as a string
-func (k KeyValue) String() (string, error) {
+// Returns the serialized kv-value as a string
+func (k KeyValue) String() string {
 	bytes, err := k.Bytes()
 	if err != nil {
-		return "", fmt.Errorf("k.ToBytes %v: %w", k, err)
+		return ""
 	}
 
-	return string(bytes), nil
+	return string(bytes)
 }
 
 // Interface representation of this KeyValue
@@ -245,29 +239,25 @@ func (k KeyValue) Interface(i interface{}) error {
 }
 
 // Set the parameter in KeyValue
-func (k KeyValue) Set(name string, value interface{}) KeyValue {
-	k[name] = value
+func (k KeyValue) Set(key string, value interface{}) KeyValue {
+	k[key] = value
 
 	return k
 }
 
-func (k KeyValue) Exist(name string) error {
-	_, exists := k[name]
-	if !exists {
-		return fmt.Errorf("'%s' not found in %v", name, k)
-	}
-
-	return nil
+func (k KeyValue) Exist(key string) (exists bool) {
+	_, exists = k[key]
+	return
 }
 
-// GetUint64 returns the parameter as an uint64
-func (k KeyValue) GetUint64(name string) (uint64, error) {
-	if err := k.Exist(name); err != nil {
-		return 0, fmt.Errorf("exist: %w", err)
+// Uint64Value returns the parameter as an uint64
+func (k KeyValue) Uint64Value(key string) (uint64, error) {
+	if !k.Exist(key) {
+		return 0, fmt.Errorf("not exist")
 	}
-	raw := k[name]
+	raw := k[key]
 	if raw == nil {
-		return 0, fmt.Errorf("key %s is nil", name)
+		return 0, fmt.Errorf("kv %s is nil", key)
 	}
 
 	pureValue, ok := raw.(uint64)
@@ -290,7 +280,7 @@ func (k KeyValue) GetUint64(name string) (uint64, error) {
 
 	stringValue, ok := raw.(string)
 	if !ok {
-		return 0, fmt.Errorf("'%s' parameter type %T, can not convert to number", name, raw)
+		return 0, fmt.Errorf("'%s' parameter type %T, can not convert to number", key, raw)
 	}
 	number, err := strconv.ParseUint(stringValue, 10, 64)
 	if err != nil {
@@ -300,15 +290,15 @@ func (k KeyValue) GetUint64(name string) (uint64, error) {
 	return number, nil
 }
 
-// GetFloat64 extracts the float number
-func (k KeyValue) GetFloat64(name string) (float64, error) {
-	if err := k.Exist(name); err != nil {
-		return 0, fmt.Errorf("exist: %w", err)
+// Float64Value extracts the float number
+func (k KeyValue) Float64Value(key string) (float64, error) {
+	if !k.Exist(key) {
+		return 0, fmt.Errorf("not exist")
 
 	}
-	raw := k[name]
+	raw := k[key]
 	if raw == nil {
-		return 0, fmt.Errorf("key %s is nil", name)
+		return 0, fmt.Errorf("kv %s is nil", key)
 	}
 
 	pureValue, ok := raw.(float64)
@@ -325,7 +315,7 @@ func (k KeyValue) GetFloat64(name string) (float64, error) {
 	}
 	stringValue, ok := raw.(string)
 	if !ok {
-		return 0, fmt.Errorf("'%s' parameter type %T, can not convert to number", name, raw)
+		return 0, fmt.Errorf("'%s' parameter type %T, can not convert to number", key, raw)
 	}
 	number, err := strconv.ParseFloat(stringValue, 64)
 	if err != nil {
@@ -335,14 +325,14 @@ func (k KeyValue) GetFloat64(name string) (float64, error) {
 	return number, nil
 }
 
-// GetBoolean extracts the value as boolean
-func (k KeyValue) GetBoolean(name string) (bool, error) {
-	if err := k.Exist(name); err != nil {
-		return false, fmt.Errorf("exist: %w", err)
+// BoolValue extracts the value as boolean
+func (k KeyValue) BoolValue(key string) (bool, error) {
+	if !k.Exist(key) {
+		return false, fmt.Errorf("not exist")
 	}
-	raw := k[name]
+	raw := k[key]
 	if raw == nil {
-		return false, fmt.Errorf("key %s is nil", name)
+		return false, fmt.Errorf("kv %s is nil", key)
 	}
 
 	pureValue, ok := raw.(bool)
@@ -350,62 +340,62 @@ func (k KeyValue) GetBoolean(name string) (bool, error) {
 		return pureValue, nil
 	}
 
-	return false, fmt.Errorf("'%s' parameter type %T, can not convert to boolean", name, raw)
+	return false, fmt.Errorf("'%s' parameter type %T, can not convert to boolean", key, raw)
 }
 
-// GetBigNumber extracts the value as the parsed large number. Use this, if the number size is more than 64 bits.
-func (k KeyValue) GetBigNumber(name string) (*big.Int, error) {
-	if err := k.Exist(name); err != nil {
-		return nil, fmt.Errorf("exist: %w", err)
+// BigIntValue extracts the value as the parsed large number. Use this if the number size is more than 64 bits.
+func (k KeyValue) BigIntValue(key string) (*big.Int, error) {
+	if !k.Exist(key) {
+		return nil, fmt.Errorf("not exist")
 	}
-	raw := k[name]
+	raw := k[key]
 	if raw == nil {
-		return nil, fmt.Errorf("key %s is nil", name)
+		return nil, fmt.Errorf("kv %s is nil", key)
 	}
 
 	value, ok := raw.(json.Number)
 	if !ok {
-		return nil, fmt.Errorf("json.Number: '%s' parameter type %T", name, raw)
+		return nil, fmt.Errorf("json.Number: '%s' parameter type %T", key, raw)
 	}
 
-	number, ok := math.ParseBig256(string(value))
+	number, ok := big.NewInt(0).SetString(string(value), 10)
 	if !ok {
-		return nil, fmt.Errorf("math.ParseBig256 failed to parse %s from '%s'", name, value)
+		return nil, fmt.Errorf("math.ParseBig256 failed to parse %s from '%s'", key, value)
 	}
 
 	return number, nil
 }
 
-// GetString returns the parameter as a string
-func (k KeyValue) GetString(name string) (string, error) {
-	if err := k.Exist(name); err != nil {
-		return "", fmt.Errorf("exist: %w", err)
+// StringValue returns the parameter as a string
+func (k KeyValue) StringValue(key string) (string, error) {
+	if !k.Exist(key) {
+		return "", fmt.Errorf("not exist")
 	}
-	raw := k[name]
+	raw := k[key]
 	if raw == nil {
-		return "", fmt.Errorf("key %s is nil", name)
+		return "", fmt.Errorf("kv %s is nil", key)
 	}
 
 	value, ok := raw.(string)
 	if !ok {
-		return "", fmt.Errorf("%s parameter type %T, can not convert to string", name, raw)
+		return "", fmt.Errorf("%s parameter type %T, can not convert to string", key, raw)
 	}
 
 	return value, nil
 }
 
-// GetStringList returns the list of strings
-func (k KeyValue) GetStringList(name string) ([]string, error) {
-	if err := k.Exist(name); err != nil {
-		return nil, fmt.Errorf("exist: '%w'", err)
+// StringsValue returns the list of strings
+func (k KeyValue) StringsValue(key string) ([]string, error) {
+	if !k.Exist(key) {
+		return nil, fmt.Errorf("not exist")
 	}
-	raw := k[name]
+	raw := k[key]
 
 	values, ok := raw.([]interface{})
 	if !ok {
 		readyList, ok := raw.([]string)
 		if !ok {
-			return nil, fmt.Errorf("'%s' parameter type %T, can not convert to string list", name, raw)
+			return nil, fmt.Errorf("'%s' parameter type %T, can not convert to string list", key, raw)
 		} else {
 			return readyList, nil
 		}
@@ -415,7 +405,7 @@ func (k KeyValue) GetStringList(name string) ([]string, error) {
 	for i, rawValue := range values {
 		v, ok := rawValue.(string)
 		if !ok {
-			return nil, fmt.Errorf("parameter %s[%d] type is %T, can not convert to string %v", name, i, rawValue, rawValue)
+			return nil, fmt.Errorf("parameter %s[%d] type is %T, can not convert to string %v", key, i, rawValue, rawValue)
 		}
 
 		list[i] = v
@@ -424,20 +414,20 @@ func (k KeyValue) GetStringList(name string) ([]string, error) {
 	return list, nil
 }
 
-// GetKeyValueList returns the parameter as a slice of map:
+// NestedListValue returns the parameter as a slice of map:
 //
 // []key_value.KeyValue
-func (k KeyValue) GetKeyValueList(name string) ([]KeyValue, error) {
-	if err := k.Exist(name); err != nil {
-		return nil, fmt.Errorf("exist: %w", err)
+func (k KeyValue) NestedListValue(key string) ([]KeyValue, error) {
+	if !k.Exist(key) {
+		return nil, fmt.Errorf("not exist")
 	}
-	raw := k[name]
+	raw := k[key]
 
 	values, ok := raw.([]interface{})
 	if !ok {
 		readyList, ok := raw.([]KeyValue)
 		if !ok {
-			return nil, fmt.Errorf("'%s' parameter type %T, can not convert to key-value list", name, raw)
+			return nil, fmt.Errorf("'%s' parameter type %T, can not convert to kv-value list", key, raw)
 		} else {
 			return readyList, nil
 		}
@@ -447,30 +437,30 @@ func (k KeyValue) GetKeyValueList(name string) ([]KeyValue, error) {
 	for i, rawValue := range values {
 		v, ok := rawValue.(map[string]interface{})
 		if !ok {
-			return nil, fmt.Errorf("parameter %s[%d] type is %T, can not convert to key-value %v", name, i, rawValue, rawValue)
+			return nil, fmt.Errorf("parameter %s[%d] type is %T, can not convert to kv-value %v", key, i, rawValue, rawValue)
 		}
 
-		list[i] = New(v)
+		list[i] = v
 	}
 
 	return list, nil
 }
 
-// GetKeyValue returns the parameter as a KeyValue
-func (k KeyValue) GetKeyValue(name string) (KeyValue, error) {
-	if err := k.Exist(name); err != nil {
-		return nil, fmt.Errorf("exist: %w", err)
+// NestedValue returns the parameter as a KeyValue
+func (k KeyValue) NestedValue(key string) (KeyValue, error) {
+	if !k.Exist(key) {
+		return nil, fmt.Errorf("not exist")
 	}
-	raw := k[name]
+	raw := k[key]
 	if raw == nil {
-		return nil, fmt.Errorf("key %s is nil", name)
+		return nil, fmt.Errorf("kv %s is nil", key)
 	}
 
 	value, ok := raw.(KeyValue)
 	if ok {
 		err := value.noNilValue()
 		if err != nil {
-			return nil, fmt.Errorf("key %s is nil", name)
+			return nil, fmt.Errorf("kv %s is nil", key)
 		}
 
 		return value, nil
@@ -478,13 +468,13 @@ func (k KeyValue) GetKeyValue(name string) (KeyValue, error) {
 
 	rawMap, ok := raw.(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("'%s' parameter type %T, can not convert to key-value", name, raw)
+		return nil, fmt.Errorf("'%s' parameter type %T, can not convert to kv-value", key, raw)
 	}
 
-	nestedKv := New(rawMap)
+	var nestedKv KeyValue = rawMap
 	err := nestedKv.noNilValue()
 	if err != nil {
-		return nil, fmt.Errorf("key %s is nil", name)
+		return nil, fmt.Errorf("kv %s is nil", key)
 	}
 
 	return nestedKv, nil

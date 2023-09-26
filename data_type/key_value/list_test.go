@@ -59,15 +59,15 @@ func (suite *TestListQueue) TestAddGet() {
 	err = suite.list.Add(uint64(3), &sample)
 	suite.Require().Error(err)
 
-	// invalid key type
+	// invalid kv type
 	err = suite.list.Add(5, sample)
 	suite.Require().Error(err)
 
-	// key value already exists
+	// kv value already exists
 	err = suite.list.Add(uint64(1), sample)
 	suite.Require().Error(err)
 
-	// key can not be a pointer
+	// kv can not be a pointer
 	key := uint64(6)
 	err = suite.list.Add(&key, sample)
 	suite.Require().Error(err)
@@ -82,11 +82,11 @@ func (suite *TestListQueue) TestAddGet() {
 	suite.Require().NoError(err)
 	suite.Require().EqualValues(sample, returnedSample)
 
-	// should fail since key doesn't exist
+	// should fail since kv doesn't exist
 	_, err = suite.list.Get(uint64(10))
 	suite.Require().Error(err)
 
-	// should fail since key type is invalid
+	// should fail since kv type is invalid
 	_, err = suite.list.Get(1)
 	suite.Require().Error(err)
 

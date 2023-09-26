@@ -15,7 +15,7 @@ import (
 // returns the current testing context
 type TestKeyValueSuite struct {
 	suite.Suite
-	key KeyValue
+	kv KeyValue
 }
 
 // SetupTest
@@ -23,12 +23,9 @@ type TestKeyValueSuite struct {
 // Setup checks ToMap() functions
 func (suite *TestKeyValueSuite) SetupTest() {
 	empty := map[string]interface{}{}
-	kv := New(empty)
+	var kv KeyValue = empty
 	suite.Require().EqualValues(empty, kv)
-	emptyKv := Empty()
-	suite.Require().EqualValues(kv, emptyKv)
 	suite.Require().Equal(empty, kv.Map())
-	suite.Require().Equal(empty, emptyKv.Map())
 
 	// no null value could be used
 	invalidStr := `{"param_1":null,"param_2":"string_value","param_3":{"nested_1":5,"nested_2":"hello"}}`
@@ -129,27 +126,27 @@ func (suite *TestKeyValueSuite) SetupTest() {
 	}
 	interfaceKv, err = NewFromInterface(uintTemp)
 	suite.Require().NoError(err)
-	param1, err := interfaceKv.GetUint64("param_1")
+	param1, err := interfaceKv.Uint64Value("param_1")
 	suite.Require().NoError(err)
 	suite.Require().Equal(uint64(2), param1)
 
-	suite.key = strKv
+	suite.kv = strKv
 }
 
 func (suite *TestKeyValueSuite) TestToString() {
 	str := `{"param_1":2,"param_2":"string_value","param_3":{"nested_1":5,"nested_2":"hello"}}`
-	kvStr, err := suite.key.String()
-	suite.Require().NoError(err)
+	kvStr := suite.kv.String()
 	suite.Require().Equal(str, kvStr)
 
+	// nil parameter is not allowed
 	nilKv := KeyValue(map[string]interface{}{"nil_param": nil})
-	_, err = nilKv.String()
-	suite.Require().Error(err)
+	kvStr = nilKv.String()
+	suite.Require().Empty(kvStr)
 
 	// Empty parameter is okay
 	emptyParam := KeyValue(map[string]interface{}{"empty_param": ""})
-	_, err = emptyParam.String()
-	suite.Require().NoError(err)
+	kvStr = emptyParam.String()
+	suite.Require().NotEmpty(kvStr)
 }
 
 func (suite *TestKeyValueSuite) TestToInterface() {
@@ -163,14 +160,14 @@ func (suite *TestKeyValueSuite) TestToInterface() {
 		Param3 Nested `json:"param_3"`
 	}
 	var newTemp Temp
-	err := suite.key.Interface(&newTemp)
+	err := suite.kv.Interface(&newTemp)
 	suite.Require().NoError(err)
 
-	// Can not convert to the scalar format
+	// Can not convert to the scalar format,
 	// But it will be empty
 	// since it's not passed by a pointer
 	var invalidTemp string
-	err = suite.key.Interface(invalidTemp)
+	err = suite.kv.Interface(invalidTemp)
 	suite.Require().Error(err)
 
 	// Can convert with the wrong type
@@ -181,7 +178,7 @@ func (suite *TestKeyValueSuite) TestToInterface() {
 		Param3 Nested `json:"param_3"`
 	}
 	var noJsonTemp InvalidTemp
-	err = suite.key.Interface(&noJsonTemp)
+	err = suite.kv.Interface(&noJsonTemp)
 	suite.Require().NoError(err)
 
 	// Can convert to another type
@@ -193,7 +190,7 @@ func (suite *TestKeyValueSuite) TestToInterface() {
 		Param3 Nested `json:"param_3"`
 	}
 	var hasMoreTemp InvalidType
-	err = suite.key.Interface(&hasMoreTemp)
+	err = suite.kv.Interface(&hasMoreTemp)
 	suite.Require().Error(err)
 }
 
