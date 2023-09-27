@@ -1,4 +1,4 @@
-module github.com/ahmetson/common-lib
+module github.com/ahmetson/datatype-lib
 
 go 1.19
 
