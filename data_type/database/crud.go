@@ -25,7 +25,7 @@ type Crud interface {
 	SelectAll(interface{}, interface{}) error
 
 	// SelectAllByCondition returns structs from database to the second argument.
-	// The sql query should match to the condition.
+	// The database query should match to the condition.
 	//
 	// It calls SELECT_ALL with WHERE clause
 	SelectAllByCondition(interface{}, key_value.KeyValue, interface{}) error // uses SELECT_ROW
